@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkers</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="menu" id="menu">
+    <h1>CHECKERS</h1>
+
+    <button id="aiBtn">🤖 Грати з AI</button>
+    <button id="twoPlayersBtn">👥 Грати удвох</button>
+    <button id="onlineBtn">🌐 Грати онлайн</button>
+  </div>
+
+  <div class="online-panel" id="onlinePanel" style="display:none">
+    <h2>Онлайн-гра</h2>
+    <p>Створи кімнату або введи код друга.</p>
+    <button id="createRoomBtn">Створити кімнату</button>
+    <div class="room-join">
+      <input id="roomCodeInput" maxlength="6" placeholder="Код кімнати" autocomplete="off" />
+      <button id="joinRoomBtn">Приєднатися</button>
+    </div>
+    <p id="onlineStatus" role="status">Підключення до сервера...</p>
+    <button id="onlineBackBtn">← Назад</button>
+  </div>
+
+  <div class="game" id="game">
+
+    <div class="top-panel">
+      <div class="player">
+        <span>Білі</span>
+        <span id="whiteTime">30</span>
+      </div>
+
+      <div class="timer-bar">
+        <div id="timerProgress"></div>
+      </div>
+
+      <div class="player">
+        <span>Чорні</span>
+        <span id="blackTime">30</span>
+      </div>
+    </div>
+
+    <h1>CHECKERS</h1>
+
+    <div id="board" aria-label="3D дошка для шашок">
+      <div id="board3d"></div>
+      <div id="boardGrid"></div>
+    </div>
+
+    <div class="turn">
+      Хід: <span id="turn">Білі</span>
+    </div>
+
+    <button id="newGameBtn">Нова гра</button>
+    <button id="menuBtn">Меню</button>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="online-config.js"></script>
+  <script src="renderer.js"></script>
+
+</body>
+</html>
