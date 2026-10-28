@@ -522,7 +522,9 @@ function init3DScene() {
   };
 
   board.addEventListener('touchstart', (event) => {
-    event.preventDefault();
+    if (event.touches.length > 1) {
+      event.preventDefault();
+    }
 
     if (cameraFocusAnimation) {
       cancelAnimationFrame(cameraFocusAnimation);
@@ -539,93 +541,13 @@ function init3DScene() {
         pitch: cameraPitch
       };
       lastPinchDistance = null;
+      dragMoved = false;
     } else if (event.touches.length === 2) {
+      event.preventDefault();
       touchStart = null;
       lastPinchDistance = getTouchDistance(event.touches);
+      dragMoved = true;
     }
-  }, { passive: false });
-
-  board.addEventListener('touchmove', (event) => {
-    event.preventDefault();
-
-    if (event.touches.length === 1 && touchStart) {
-      const touch = event.touches[0];
-      const dx = touch.clientX - touchStart.x;
-      const dy = touch.clientY - touchStart.y;
-
-      if (Math.hypot(dx, dy) > 4) dragMoved = true;
-
-      cameraAngle = touchStart.angle + dx * 0.008;
-      cameraPitch = Math.max(
-        0.35,
-        Math.min(1.25, touchStart.pitch + dy * 0.004)
-      );
-      update3DCamera();
-    } else if (event.touches.length === 2) {
-      const distance = getTouchDistance(event.touches);
-
-      if (lastPinchDistance !== null) {
-        cameraDistance = Math.max(
-          9.5,
-          Math.min(16, cameraDistance + (lastPinchDistance - distance) * 0.025)
-        );
-        update3DCamera();
-      }
-
-      lastPinchDistance = distance;
-    }
-  }, { passive: false });
-
-  board.addEventListener('touchend', (event) => {
-    if (event.touches.length === 0) {
-      touchStart = null;
-      lastPinchDistance = null;
-    } else if (event.touches.length === 1) {
-      const touch = event.touches[0];
-      touchStart = {
-        x: touch.clientX,
-        y: touch.clientY,
-        angle: cameraAngle,
-        pitch: cameraPitch
-      };
-      lastPinchDistance = null;
-    }
-  }, { passive: false });
-
-  board.addEventListener('touchcancel', () => {
-    touchStart = null;
-    lastPinchDistance = null;
-  });
-
-  renderer3D.domElement.addEventListener('click', (event) => {
-    if (dragMoved || !gameStarted) {
-      dragMoved = false;
-      return;
-    }
-
-    const rect = renderer3D.domElement.getBoundingClientRect();
-    const pointer = new THREE.Vector2(
-      ((event.clientX - rect.left) / rect.width) * 2 - 1,
-      -((event.clientY - rect.top) / rect.height) * 2 + 1
-    );
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(pointer, camera3D);
-    const hit = raycaster.intersectObjects(boardSquares3D, false)[0];
-
-    if (hit && hit.object.userData.row !== undefined) {
-      handleCellClick(hit.object.userData.row, hit.object.userData.col);
-    }
-
-    dragMoved = false;
-  });
-
-  board.addEventListener('wheel', (event) => {
-    event.preventDefault();
-    cameraDistance = Math.max(
-      9.5,
-      Math.min(16, cameraDistance + event.deltaY * 0.008)
-    );
-    update3DCamera();
   }, { passive: false });
   render3D();
 }
