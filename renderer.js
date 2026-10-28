@@ -285,7 +285,10 @@ function startGame(mode) {
 
   // Start each mode from the white side. Only two-player mode will auto-flip
   // the camera on subsequent turns; AI mode keeps the user's chosen view.
-  focusCameraOnTurn("white", true);
+  focusCameraOnTurn(
+      gameMode === "online" && onlineColor ? onlineColor : "white",
+      true
+    );
 
   createPieces();
   renderPieces();
