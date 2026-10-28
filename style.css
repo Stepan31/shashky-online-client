@@ -211,3 +211,38 @@ h1 {
 #board3d canvas {
   touch-action: none;
 }
+/* Mobile camera rotation controls */
+#mobileCameraControls {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  #mobileCameraControls {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    padding: 10px;
+    pointer-events: none;
+  }
+
+  #mobileCameraControls button {
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(218, 174, 105, 0.8);
+    border-radius: 12px;
+    background: rgba(23, 27, 36, 0.82);
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

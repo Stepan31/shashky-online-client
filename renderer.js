@@ -534,17 +534,8 @@ function init3DScene() {
     if (event.button === 1) event.preventDefault();
   });
 
-  // Touch controls: one finger rotates; two fingers zoom.
-  // Touch controls: one finger rotates; two fingers zoom.
-  let touchStart = null;
-  let lastPinchDistance = null;
-
-  const getTouchDistance = (touches) => {
-    const dx = touches[0].clientX - touches[1].clientX;
-    const dy = touches[0].clientY - touches[1].clientY;
-    return Math.hypot(dx, dy);
-  };
-
+// Mobile: use board touches only for selecting and moving pieces.
+  // Camera rotation is handled by the left/right buttons.
   board.addEventListener(
     "touchstart",
     (event) => {
@@ -555,25 +546,11 @@ function init3DScene() {
 
       cameraFocusTarget = null;
 
-      if (event.touches.length === 1) {
-        const touch = event.touches[0];
-
-        touchStart = {
-          x: touch.clientX,
-          y: touch.clientY,
-          angle: cameraAngle,
-          pitch: cameraPitch,
-        };
-
-        lastPinchDistance = null;
-        dragMoved = false;
-      } else if (event.touches.length === 2) {
+      if (event.touches.length > 1) {
         event.preventDefault();
-
-        touchStart = null;
-        lastPinchDistance = getTouchDistance(event.touches);
-        dragMoved = true;
       }
+
+      dragMoved = false;
     },
     { passive: false },
   );
@@ -581,67 +558,33 @@ function init3DScene() {
   board.addEventListener(
     "touchmove",
     (event) => {
-      if (event.touches.length === 1 && touchStart) {
-        const touch = event.touches[0];
-        const dx = touch.clientX - touchStart.x;
-        const dy = touch.clientY - touchStart.y;
-
-        if (Math.hypot(dx, dy) > 6) {
-          dragMoved = true;
-          event.preventDefault();
-
-          cameraAngle = touchStart.angle + dx * 0.008;
-          cameraPitch = Math.max(
-            0.35,
-            Math.min(1.25, touchStart.pitch + dy * 0.004),
-          );
-
-          update3DCamera();
-        }
-      } else if (event.touches.length === 2) {
+      // Do not rotate the camera when a finger moves on the board.
+      if (event.touches.length > 1) {
         event.preventDefault();
-
-        const distance = getTouchDistance(event.touches);
-
-        if (lastPinchDistance !== null) {
-          cameraDistance = Math.max(
-            9.5,
-            Math.min(
-              16,
-              cameraDistance + (lastPinchDistance - distance) * 0.025,
-            ),
-          );
-
-          update3DCamera();
-        }
-
-        lastPinchDistance = distance;
       }
     },
     { passive: false },
   );
 
-  board.addEventListener("touchend", (event) => {
-    if (event.touches.length === 0) {
-      touchStart = null;
-      lastPinchDistance = null;
-    } else if (event.touches.length === 1) {
-      const touch = event.touches[0];
-
-      touchStart = {
-        x: touch.clientX,
-        y: touch.clientY,
-        angle: cameraAngle,
-        pitch: cameraPitch,
-      };
-
-      lastPinchDistance = null;
-    }
+  board.addEventListener("touchend", () => {
+    // Allow the next tap to select a piece or destination.
+    dragMoved = false;
   });
 
   board.addEventListener("touchcancel", () => {
-    touchStart = null;
-    lastPinchDistance = null;
+    dragMoved = false;
+  });
+
+  const cameraStep = 0.22;
+
+  document.getElementById("cameraLeftBtn").addEventListener("click", () => {
+    cameraAngle -= cameraStep;
+    update3DCamera();
+  });
+
+  document.getElementById("cameraRightBtn").addEventListener("click", () => {
+    cameraAngle += cameraStep;
+    update3DCamera();
   });
 
   // Select board squares. A camera gesture must not trigger a move.
