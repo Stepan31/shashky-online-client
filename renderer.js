@@ -286,9 +286,9 @@ function startGame(mode) {
   // Start each mode from the white side. Only two-player mode will auto-flip
   // the camera on subsequent turns; AI mode keeps the user's chosen view.
   focusCameraOnTurn(
-      gameMode === "online" && onlineColor ? onlineColor : "white",
-      true
-    );
+    gameMode === "online" && onlineColor ? onlineColor : "white",
+    true
+  );
 
   createPieces();
   renderPieces();
@@ -457,14 +457,18 @@ function init3DScene() {
 
   resize3D();
   window.addEventListener('resize', resize3D);
-  // Middle mouse drag rotates the camera in real time. Left click remains for game moves.
+
+  // Mouse middle-button drag rotates the camera.
   board.addEventListener('pointerdown', (event) => {
-    if (event.button !== 1) return; // 1 = middle mouse button
+    if (event.pointerType === 'touch' || event.button !== 1) return;
+
     event.preventDefault();
+
     if (cameraFocusAnimation) {
       cancelAnimationFrame(cameraFocusAnimation);
       cameraFocusAnimation = null;
     }
+
     cameraFocusTarget = null;
     dragStart = {
       x: event.clientX,
@@ -474,23 +478,131 @@ function init3DScene() {
       pointerId: event.pointerId
     };
     dragMoved = false;
+
     try { board.setPointerCapture(event.pointerId); } catch (_) {}
   });
+
   board.addEventListener('pointermove', (event) => {
-    if (!dragStart || dragStart.pointerId !== event.pointerId || !(event.buttons & 4)) return; // 4 = middle button held
-    if (Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) > 4) dragMoved = true;
+    if (
+      !dragStart ||
+      dragStart.pointerId !== event.pointerId ||
+      !(event.buttons & 4)
+    ) return;
+
+    if (Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) > 4) {
+      dragMoved = true;
+    }
+
     cameraAngle = dragStart.angle + (event.clientX - dragStart.x) * 0.008;
-    cameraPitch = Math.max(0.35, Math.min(1.25, dragStart.pitch + (event.clientY - dragStart.y) * 0.004));
-    update3DCamera(); // update3DCamera now renders immediately, without restarting the game
+    cameraPitch = Math.max(
+      0.35,
+      Math.min(1.25, dragStart.pitch + (event.clientY - dragStart.y) * 0.004)
+    );
+    update3DCamera();
   });
+
   window.addEventListener('pointerup', (event) => {
-    if (!dragStart || event.pointerId === dragStart.pointerId) dragStart = null;
+    if (dragStart && event.pointerId === dragStart.pointerId) {
+      dragStart = null;
+    }
   });
+
   board.addEventListener('auxclick', (event) => {
     if (event.button === 1) event.preventDefault();
   });
+
+  // Touch controls: one finger rotates; two fingers zoom.
+  let touchStart = null;
+  let lastPinchDistance = null;
+
+  const getTouchDistance = (touches) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  };
+
+  board.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+
+    if (cameraFocusAnimation) {
+      cancelAnimationFrame(cameraFocusAnimation);
+      cameraFocusAnimation = null;
+    }
+    cameraFocusTarget = null;
+
+    if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      touchStart = {
+        x: touch.clientX,
+        y: touch.clientY,
+        angle: cameraAngle,
+        pitch: cameraPitch
+      };
+      lastPinchDistance = null;
+    } else if (event.touches.length === 2) {
+      touchStart = null;
+      lastPinchDistance = getTouchDistance(event.touches);
+    }
+  }, { passive: false });
+
+  board.addEventListener('touchmove', (event) => {
+    event.preventDefault();
+
+    if (event.touches.length === 1 && touchStart) {
+      const touch = event.touches[0];
+      const dx = touch.clientX - touchStart.x;
+      const dy = touch.clientY - touchStart.y;
+
+      if (Math.hypot(dx, dy) > 4) dragMoved = true;
+
+      cameraAngle = touchStart.angle + dx * 0.008;
+      cameraPitch = Math.max(
+        0.35,
+        Math.min(1.25, touchStart.pitch + dy * 0.004)
+      );
+      update3DCamera();
+    } else if (event.touches.length === 2) {
+      const distance = getTouchDistance(event.touches);
+
+      if (lastPinchDistance !== null) {
+        cameraDistance = Math.max(
+          9.5,
+          Math.min(16, cameraDistance + (lastPinchDistance - distance) * 0.025)
+        );
+        update3DCamera();
+      }
+
+      lastPinchDistance = distance;
+    }
+  }, { passive: false });
+
+  board.addEventListener('touchend', (event) => {
+    if (event.touches.length === 0) {
+      touchStart = null;
+      lastPinchDistance = null;
+    } else if (event.touches.length === 1) {
+      const touch = event.touches[0];
+      touchStart = {
+        x: touch.clientX,
+        y: touch.clientY,
+        angle: cameraAngle,
+        pitch: cameraPitch
+      };
+      lastPinchDistance = null;
+    }
+  }, { passive: false });
+
+  board.addEventListener('touchcancel', () => {
+    touchStart = null;
+    lastPinchDistance = null;
+  });
+
   renderer3D.domElement.addEventListener('click', (event) => {
-    if (dragMoved || !gameStarted) { dragMoved = false; return; }
+    if (dragMoved || !gameStarted) {
+      dragMoved = false;
+      return;
+    }
+
     const rect = renderer3D.domElement.getBoundingClientRect();
     const pointer = new THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
@@ -499,14 +611,20 @@ function init3DScene() {
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(pointer, camera3D);
     const hit = raycaster.intersectObjects(boardSquares3D, false)[0];
+
     if (hit && hit.object.userData.row !== undefined) {
       handleCellClick(hit.object.userData.row, hit.object.userData.col);
     }
+
     dragMoved = false;
   });
+
   board.addEventListener('wheel', (event) => {
     event.preventDefault();
-    cameraDistance = Math.max(9.5, Math.min(16, cameraDistance + event.deltaY * 0.008));
+    cameraDistance = Math.max(
+      9.5,
+      Math.min(16, cameraDistance + event.deltaY * 0.008)
+    );
     update3DCamera();
   }, { passive: false });
   render3D();

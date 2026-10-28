@@ -206,3 +206,8 @@ h1 {
 .room-join { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
 .room-join input { width: 145px; padding: 13px 12px; border-radius: 9px; border: 1px solid #555d6e; background: #151820; color: white; font-size: 18px; text-transform: uppercase; text-align: center; }
 #onlineStatus { min-height: 24px; overflow-wrap: anywhere; }
+#board,
+#board3d,
+#board3d canvas {
+  touch-action: none;
+}
