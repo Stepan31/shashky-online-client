@@ -20,7 +20,6 @@ let onlineRoomCode = null;
 let onlineColor = null;
 let applyingRemoteState = false;
 
-
 // ============================
 // DOM
 // ============================
@@ -46,7 +45,6 @@ const roomCodeInput = document.getElementById("roomCodeInput");
 const onlineStatus = document.getElementById("onlineStatus");
 const onlineBackBtn = document.getElementById("onlineBackBtn");
 
-
 // ============================
 // ONLINE CONNECTION / LOBBY
 // ============================
@@ -57,21 +55,33 @@ function setOnlineStatus(message) {
 function connectOnlineSocket() {
   if (onlineSocket) return;
   if (typeof io !== "function") {
-    setOnlineStatus("Не вдалося завантажити Socket.IO. Перевір інтернет-з'єднання.");
+    setOnlineStatus(
+      "Не вдалося завантажити Socket.IO. Перевір інтернет-з'єднання.",
+    );
     return;
   }
   const serverUrl = window.CHECKERS_SERVER_URL || "http://localhost:3000";
   onlineSocket = io(serverUrl, { timeout: 8000, reconnection: true });
-  onlineSocket.on("connect", () => setOnlineStatus("З'єднано із сервером. Створи кімнату або введи код."));
-  onlineSocket.on("connect_error", () => setOnlineStatus("Не вдалося підключитися до сервера: " + serverUrl));
+  onlineSocket.on("connect", () =>
+    setOnlineStatus("З'єднано із сервером. Створи кімнату або введи код."),
+  );
+  onlineSocket.on("connect_error", () =>
+    setOnlineStatus("Не вдалося підключитися до сервера: " + serverUrl),
+  );
   onlineSocket.on("room-created", ({ roomCode }) => {
     onlineRoomCode = roomCode;
     roomCodeInput.value = roomCode;
-    setOnlineStatus("Кімнату створено! Код для друга: " + roomCode + ". Очікуємо другого гравця...");
+    setOnlineStatus(
+      "Кімнату створено! Код для друга: " +
+        roomCode +
+        ". Очікуємо другого гравця...",
+    );
   });
   onlineSocket.on("room-joined", ({ roomCode }) => {
     onlineRoomCode = roomCode;
-    setOnlineStatus("Приєднано до кімнати " + roomCode + ". Очікуємо старту...");
+    setOnlineStatus(
+      "Приєднано до кімнати " + roomCode + ". Очікуємо старту...",
+    );
   });
   onlineSocket.on("room-error", (message) => setOnlineStatus(message));
   onlineSocket.on("game-start", ({ roomCode, color, state }) => {
@@ -81,7 +91,12 @@ function connectOnlineSocket() {
     menu.style.display = "none";
     startGame("online");
     applyOnlineState(state, false);
-    setOnlineStatus("Гра почалася. Ти граєш за " + (color === "white" ? "білих" : "чорних") + ". Код: " + roomCode);
+    setOnlineStatus(
+      "Гра почалася. Ти граєш за " +
+        (color === "white" ? "білих" : "чорних") +
+        ". Код: " +
+        roomCode,
+    );
   });
   onlineSocket.on("state-update", (state) => applyOnlineState(state, true));
   onlineSocket.on("opponent-left", () => {
@@ -98,15 +113,25 @@ function connectOnlineSocket() {
 
 function serializeOnlineState() {
   return {
-    pieces: pieces.map(piece => ({ row: piece.row, col: piece.col, color: piece.color, king: !!piece.king })),
-    currentPlayer
+    pieces: pieces.map((piece) => ({
+      row: piece.row,
+      col: piece.col,
+      color: piece.color,
+      king: !!piece.king,
+    })),
+    currentPlayer,
   };
 }
 
 function applyOnlineState(state, fromOpponent) {
   if (!state || !Array.isArray(state.pieces)) return;
   applyingRemoteState = true;
-  pieces = state.pieces.map(piece => ({ row: piece.row, col: piece.col, color: piece.color, king: !!piece.king }));
+  pieces = state.pieces.map((piece) => ({
+    row: piece.row,
+    col: piece.col,
+    color: piece.color,
+    king: !!piece.king,
+  }));
   currentPlayer = state.currentPlayer === "black" ? "black" : "white";
   selectedPiece = null;
   aiCapturing = false;
@@ -168,14 +193,15 @@ joinRoomBtn.addEventListener("click", () => {
 
 newGameBtn.addEventListener("click", () => {
   if (gameMode === "online") {
-    alert("Щоб почати нову онлайн-гру, повернися в меню та створи нову кімнату.");
+    alert(
+      "Щоб почати нову онлайн-гру, повернися в меню та створи нову кімнату.",
+    );
     return;
   }
   startGame(gameMode);
 });
 
 menuBtn.addEventListener("click", () => {
-
   stopTimer();
 
   if (gameMode === "online" && onlineSocket && onlineRoomCode) {
@@ -195,7 +221,6 @@ menuBtn.addEventListener("click", () => {
 // МЕНЮ СКЛАДНОСТІ
 // ============================
 function showDifficultyMenu() {
-
   menu.innerHTML = `
     <div class="difficulty-menu">
 
@@ -220,59 +245,36 @@ function showDifficultyMenu() {
     </div>
   `;
 
+  document.getElementById("easyBtn").addEventListener("click", () => {
+    selectDifficulty("easy");
+  });
 
-  document
-    .getElementById("easyBtn")
-    .addEventListener("click", () => {
+  document.getElementById("mediumBtn").addEventListener("click", () => {
+    selectDifficulty("medium");
+  });
 
-      selectDifficulty("easy");
+  document.getElementById("hardBtn").addEventListener("click", () => {
+    selectDifficulty("hard");
+  });
 
-    });
-
-
-  document
-    .getElementById("mediumBtn")
-    .addEventListener("click", () => {
-
-      selectDifficulty("medium");
-
-    });
-
-
-  document
-    .getElementById("hardBtn")
-    .addEventListener("click", () => {
-
-      selectDifficulty("hard");
-
-    });
-
-
-  document
-    .getElementById("backBtn")
-    .addEventListener("click", () => {
-
-      location.reload();
-
-    });
+  document.getElementById("backBtn").addEventListener("click", () => {
+    location.reload();
+  });
 }
 
 // ============================
 // ФУНКЦІЯ ВИБОРУ
 // ============================
 function selectDifficulty(level) {
-
   aiDifficulty = level;
 
   startGame("ai");
-
 }
 // ============================
 // ПОЧАТОК ГРИ
 // ============================
 
 function startGame(mode) {
-
   gameMode = mode;
   gameStarted = true;
 
@@ -287,7 +289,7 @@ function startGame(mode) {
   // the camera on subsequent turns; AI mode keeps the user's chosen view.
   focusCameraOnTurn(
     gameMode === "online" && onlineColor ? onlineColor : "white",
-    true
+    true,
   );
 
   createPieces();
@@ -298,52 +300,41 @@ function startGame(mode) {
   startTimer();
 }
 
-
 // ============================
 // СТВОРЕННЯ ФІШОК
 // ============================
 
 function createPieces() {
-
   pieces = [];
 
   // Чорні
   for (let row = 0; row < 3; row++) {
-
     for (let col = 0; col < SIZE; col++) {
-
       if ((row + col) % 2 === 1) {
-
         pieces.push({
           row: row,
           col: col,
           color: "black",
-          king: false
+          king: false,
         });
-
       }
     }
   }
 
   // Білі
   for (let row = SIZE - 3; row < SIZE; row++) {
-
     for (let col = 0; col < SIZE; col++) {
-
       if ((row + col) % 2 === 1) {
-
         pieces.push({
           row: row,
           col: col,
           color: "white",
-          king: false
+          king: false,
         });
-
       }
     }
   }
 }
-
 
 // ============================
 // THREE.JS: 3D-ДОШКА ТА ФІШКИ
@@ -367,14 +358,15 @@ let dragMoved = false;
 function init3DScene() {
   if (scene3D) return;
   if (!window.THREE) {
-    board3d.innerHTML = '<div class="three-error">Не вдалося завантажити Three.js. Перевір підключення до інтернету та перезапусти гру.</div>';
+    board3d.innerHTML =
+      '<div class="three-error">Не вдалося завантажити Three.js. Перевір підключення до інтернету та перезапусти гру.</div>';
     return;
   }
 
   const THREE = window.THREE;
   scene3D = new THREE.Scene();
-  scene3D.background = new THREE.Color('#171b24');
-  scene3D.fog = new THREE.Fog('#171b24', 15, 28);
+  scene3D.background = new THREE.Color("#171b24");
+  scene3D.fog = new THREE.Fog("#171b24", 15, 28);
 
   camera3D = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   update3DCamera();
@@ -404,7 +396,7 @@ function init3DScene() {
 
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(200, 200),
-    new THREE.MeshStandardMaterial({ color: '#171b24', roughness: 0.92 })
+    new THREE.MeshStandardMaterial({ color: "#171b24", roughness: 0.92 }),
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.38;
@@ -413,7 +405,11 @@ function init3DScene() {
 
   const woodBase = new THREE.Mesh(
     new THREE.BoxGeometry(8.35, 0.38, 8.35),
-    new THREE.MeshStandardMaterial({ color: '#40271d', roughness: 0.3, metalness: 0.08 })
+    new THREE.MeshStandardMaterial({
+      color: "#40271d",
+      roughness: 0.3,
+      metalness: 0.08,
+    }),
   );
   woodBase.position.y = -0.12;
   woodBase.castShadow = true;
@@ -422,19 +418,29 @@ function init3DScene() {
 
   const trim = new THREE.Mesh(
     new THREE.BoxGeometry(8.12, 0.08, 8.12),
-    new THREE.MeshStandardMaterial({ color: '#b27b43', roughness: 0.28, metalness: 0.35 })
+    new THREE.MeshStandardMaterial({
+      color: "#b27b43",
+      roughness: 0.28,
+      metalness: 0.35,
+    }),
   );
   trim.position.y = 0.095;
   scene3D.add(trim);
 
   boardSquares3D = [];
-  const lightMat = new THREE.MeshStandardMaterial({ color: '#e7d2aa', roughness: 0.72 });
-  const darkMat = new THREE.MeshStandardMaterial({ color: '#70452f', roughness: 0.48 });
+  const lightMat = new THREE.MeshStandardMaterial({
+    color: "#e7d2aa",
+    roughness: 0.72,
+  });
+  const darkMat = new THREE.MeshStandardMaterial({
+    color: "#70452f",
+    roughness: 0.48,
+  });
   for (let row = 0; row < SIZE; row++) {
     for (let col = 0; col < SIZE; col++) {
       const square = new THREE.Mesh(
         new THREE.BoxGeometry(0.99, 0.09, 0.99),
-        (row + col) % 2 === 0 ? lightMat : darkMat
+        (row + col) % 2 === 0 ? lightMat : darkMat,
       );
       square.position.set(col - 3.5, 0.17, row - 3.5);
       square.userData.row = row;
@@ -447,20 +453,32 @@ function init3DScene() {
   }
 
   // Decorative brass corners make the board visibly thick and finished.
-  const cornerMat = new THREE.MeshStandardMaterial({ color: '#d7a45b', metalness: 0.72, roughness: 0.25 });
-  for (const [x, z] of [[-3.92,-3.92],[3.92,-3.92],[-3.92,3.92],[3.92,3.92]]) {
-    const corner = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.12, 0.16), cornerMat);
+  const cornerMat = new THREE.MeshStandardMaterial({
+    color: "#d7a45b",
+    metalness: 0.72,
+    roughness: 0.25,
+  });
+  for (const [x, z] of [
+    [-3.92, -3.92],
+    [3.92, -3.92],
+    [-3.92, 3.92],
+    [3.92, 3.92],
+  ]) {
+    const corner = new THREE.Mesh(
+      new THREE.BoxGeometry(0.16, 0.12, 0.16),
+      cornerMat,
+    );
     corner.position.set(x, 0.11, z);
     corner.castShadow = true;
     scene3D.add(corner);
   }
 
   resize3D();
-  window.addEventListener('resize', resize3D);
+  window.addEventListener("resize", resize3D);
 
   // Mouse middle-button drag rotates the camera.
-  board.addEventListener('pointerdown', (event) => {
-    if (event.pointerType === 'touch' || event.button !== 1) return;
+  board.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "touch" || event.button !== 1) return;
 
     event.preventDefault();
 
@@ -475,42 +493,48 @@ function init3DScene() {
       y: event.clientY,
       angle: cameraAngle,
       pitch: cameraPitch,
-      pointerId: event.pointerId
+      pointerId: event.pointerId,
     };
     dragMoved = false;
 
-    try { board.setPointerCapture(event.pointerId); } catch (_) {}
+    try {
+      board.setPointerCapture(event.pointerId);
+    } catch (_) {}
   });
 
-  board.addEventListener('pointermove', (event) => {
+  board.addEventListener("pointermove", (event) => {
     if (
       !dragStart ||
       dragStart.pointerId !== event.pointerId ||
       !(event.buttons & 4)
-    ) return;
+    )
+      return;
 
-    if (Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) > 4) {
+    if (
+      Math.hypot(event.clientX - dragStart.x, event.clientY - dragStart.y) > 4
+    ) {
       dragMoved = true;
     }
 
     cameraAngle = dragStart.angle + (event.clientX - dragStart.x) * 0.008;
     cameraPitch = Math.max(
       0.35,
-      Math.min(1.25, dragStart.pitch + (event.clientY - dragStart.y) * 0.004)
+      Math.min(1.25, dragStart.pitch + (event.clientY - dragStart.y) * 0.004),
     );
     update3DCamera();
   });
 
-  window.addEventListener('pointerup', (event) => {
+  window.addEventListener("pointerup", (event) => {
     if (dragStart && event.pointerId === dragStart.pointerId) {
       dragStart = null;
     }
   });
 
-  board.addEventListener('auxclick', (event) => {
+  board.addEventListener("auxclick", (event) => {
     if (event.button === 1) event.preventDefault();
   });
 
+  // Touch controls: one finger rotates; two fingers zoom.
   // Touch controls: one finger rotates; two fingers zoom.
   let touchStart = null;
   let lastPinchDistance = null;
@@ -521,34 +545,164 @@ function init3DScene() {
     return Math.hypot(dx, dy);
   };
 
-  board.addEventListener('touchstart', (event) => {
-    if (event.touches.length > 1) {
-      event.preventDefault();
-    }
+  board.addEventListener(
+    "touchstart",
+    (event) => {
+      if (cameraFocusAnimation) {
+        cancelAnimationFrame(cameraFocusAnimation);
+        cameraFocusAnimation = null;
+      }
 
-    if (cameraFocusAnimation) {
-      cancelAnimationFrame(cameraFocusAnimation);
-      cameraFocusAnimation = null;
-    }
-    cameraFocusTarget = null;
+      cameraFocusTarget = null;
 
-    if (event.touches.length === 1) {
+      if (event.touches.length === 1) {
+        const touch = event.touches[0];
+
+        touchStart = {
+          x: touch.clientX,
+          y: touch.clientY,
+          angle: cameraAngle,
+          pitch: cameraPitch,
+        };
+
+        lastPinchDistance = null;
+        dragMoved = false;
+      } else if (event.touches.length === 2) {
+        event.preventDefault();
+
+        touchStart = null;
+        lastPinchDistance = getTouchDistance(event.touches);
+        dragMoved = true;
+      }
+    },
+    { passive: false },
+  );
+
+  board.addEventListener(
+    "touchmove",
+    (event) => {
+      if (event.touches.length === 1 && touchStart) {
+        const touch = event.touches[0];
+        const dx = touch.clientX - touchStart.x;
+        const dy = touch.clientY - touchStart.y;
+
+        if (Math.hypot(dx, dy) > 6) {
+          dragMoved = true;
+          event.preventDefault();
+
+          cameraAngle = touchStart.angle + dx * 0.008;
+          cameraPitch = Math.max(
+            0.35,
+            Math.min(1.25, touchStart.pitch + dy * 0.004),
+          );
+
+          update3DCamera();
+        }
+      } else if (event.touches.length === 2) {
+        event.preventDefault();
+
+        const distance = getTouchDistance(event.touches);
+
+        if (lastPinchDistance !== null) {
+          cameraDistance = Math.max(
+            9.5,
+            Math.min(
+              16,
+              cameraDistance + (lastPinchDistance - distance) * 0.025,
+            ),
+          );
+
+          update3DCamera();
+        }
+
+        lastPinchDistance = distance;
+      }
+    },
+    { passive: false },
+  );
+
+  board.addEventListener("touchend", (event) => {
+    if (event.touches.length === 0) {
+      touchStart = null;
+      lastPinchDistance = null;
+    } else if (event.touches.length === 1) {
       const touch = event.touches[0];
+
       touchStart = {
         x: touch.clientX,
         y: touch.clientY,
         angle: cameraAngle,
-        pitch: cameraPitch
+        pitch: cameraPitch,
       };
+
       lastPinchDistance = null;
-      dragMoved = false;
-    } else if (event.touches.length === 2) {
-      event.preventDefault();
-      touchStart = null;
-      lastPinchDistance = getTouchDistance(event.touches);
-      dragMoved = true;
     }
-  }, { passive: false });
+  });
+
+  board.addEventListener("touchcancel", () => {
+    touchStart = null;
+    lastPinchDistance = null;
+  });
+
+  // Select board squares. A camera gesture must not trigger a move.
+  renderer3D.domElement.addEventListener("click", (event) => {
+    console.log("BOARD CLICK", {
+      gameStarted,
+      gameMode,
+      onlineColor,
+      currentPlayer,
+      dragMoved,
+    });
+
+    if (dragMoved || !gameStarted) {
+      dragMoved = false;
+      return;
+    }
+
+    const rect = renderer3D.domElement.getBoundingClientRect();
+
+    const pointer = new THREE.Vector2(
+      ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1,
+    );
+
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(pointer, camera3D);
+
+    const hit = raycaster.intersectObjects(boardSquares3D, false)[0];
+    console.log(
+      "RAYCAST",
+      hit
+        ? {
+            row: hit.object.userData.row,
+            col: hit.object.userData.col,
+          }
+        : "NO HIT",
+    );
+
+    if (hit && hit.object.userData.row !== undefined) {
+      handleCellClick(hit.object.userData.row, hit.object.userData.col);
+    }
+
+    dragMoved = false;
+  });
+
+  // Mouse wheel zoom on desktop.
+  board.addEventListener(
+    "wheel",
+    (event) => {
+      event.preventDefault();
+
+      cameraDistance = Math.max(
+        9.5,
+        Math.min(16, cameraDistance + event.deltaY * 0.008),
+      );
+
+      update3DCamera();
+    },
+    { passive: false },
+  );
+
   render3D();
 }
 
@@ -559,7 +713,7 @@ function focusCameraOnTurn(player, immediate = false) {
   // Keep the camera slightly off-axis and above the board so the pieces remain visibly 3D.
   cameraFocusTarget = {
     angle: player === "white" ? 0.24 : Math.PI + 0.24,
-    pitch: 0.76
+    pitch: 0.76,
   };
 
   if (cameraFocusAnimation) {
@@ -578,11 +732,17 @@ function focusCameraOnTurn(player, immediate = false) {
     if (!camera3D || !cameraFocusTarget) return;
     // Rotate along the shortest direction to avoid a full extra spin at the 0/2π boundary.
     const targetAngle = cameraFocusTarget.angle;
-    const delta = Math.atan2(Math.sin(targetAngle - cameraAngle), Math.cos(targetAngle - cameraAngle));
+    const delta = Math.atan2(
+      Math.sin(targetAngle - cameraAngle),
+      Math.cos(targetAngle - cameraAngle),
+    );
     cameraAngle += delta * 0.14;
     cameraPitch += (cameraFocusTarget.pitch - cameraPitch) * 0.14;
 
-    if (Math.abs(delta) < 0.002 && Math.abs(cameraFocusTarget.pitch - cameraPitch) < 0.002) {
+    if (
+      Math.abs(delta) < 0.002 &&
+      Math.abs(cameraFocusTarget.pitch - cameraPitch) < 0.002
+    ) {
       cameraAngle = targetAngle;
       cameraPitch = cameraFocusTarget.pitch;
       cameraFocusAnimation = null;
@@ -601,7 +761,7 @@ function update3DCamera() {
   camera3D.position.set(
     Math.sin(cameraAngle) * cameraDistance * Math.cos(cameraPitch),
     cameraDistance * Math.sin(cameraPitch),
-    Math.cos(cameraAngle) * cameraDistance * Math.cos(cameraPitch)
+    Math.cos(cameraAngle) * cameraDistance * Math.cos(cameraPitch),
   );
   camera3D.lookAt(0, 0.1, 0);
   // Render immediately after camera changes; do not wait for a move or new game.
@@ -621,45 +781,74 @@ function resize3D() {
 function makePiece3D(piece) {
   const THREE = window.THREE;
   const group = new THREE.Group();
-  const isWhite = piece.color === 'white';
+  const isWhite = piece.color === "white";
   const bodyMat = new THREE.MeshStandardMaterial({
-    color: isWhite ? '#e9edf3' : '#151c29',
+    color: isWhite ? "#e9edf3" : "#151c29",
     metalness: isWhite ? 0.28 : 0.42,
-    roughness: isWhite ? 0.24 : 0.2
+    roughness: isWhite ? 0.24 : 0.2,
   });
   const edgeMat = new THREE.MeshStandardMaterial({
-    color: isWhite ? '#aeb9c8' : '#05080e', metalness: 0.58, roughness: 0.22
+    color: isWhite ? "#aeb9c8" : "#05080e",
+    metalness: 0.58,
+    roughness: 0.22,
   });
-  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.315, 0.035, 12, 48), edgeMat);
+  const rim = new THREE.Mesh(
+    new THREE.TorusGeometry(0.315, 0.035, 12, 48),
+    edgeMat,
+  );
   rim.rotation.x = Math.PI / 2;
   rim.position.y = 0.12;
   group.add(rim);
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 0.19, 48, 1), bodyMat);
+  const body = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.35, 0.38, 0.19, 48, 1),
+    bodyMat,
+  );
   body.position.y = 0.12;
   body.castShadow = true;
   body.receiveShadow = true;
   group.add(body);
-  const top = new THREE.Mesh(new THREE.CylinderGeometry(0.31, 0.35, 0.055, 48), bodyMat);
+  const top = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.31, 0.35, 0.055, 48),
+    bodyMat,
+  );
   top.position.y = 0.235;
   top.castShadow = true;
   group.add(top);
-  const topRing = new THREE.Mesh(new THREE.TorusGeometry(0.265, 0.012, 8, 48), edgeMat);
+  const topRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.265, 0.012, 8, 48),
+    edgeMat,
+  );
   topRing.rotation.x = Math.PI / 2;
   topRing.position.y = 0.266;
   group.add(topRing);
 
   if (piece.king) {
-    const gold = new THREE.MeshStandardMaterial({ color: '#f4c45e', metalness: 0.78, roughness: 0.2, emissive: '#5b3505', emissiveIntensity: 0.15 });
-    const crownBase = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.23, 0.055, 32), gold);
+    const gold = new THREE.MeshStandardMaterial({
+      color: "#f4c45e",
+      metalness: 0.78,
+      roughness: 0.2,
+      emissive: "#5b3505",
+      emissiveIntensity: 0.15,
+    });
+    const crownBase = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.19, 0.23, 0.055, 32),
+      gold,
+    );
     crownBase.position.y = 0.31;
     group.add(crownBase);
-    const crownRing = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.025, 8, 32), gold);
+    const crownRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.19, 0.025, 8, 32),
+      gold,
+    );
     crownRing.rotation.x = Math.PI / 2;
     crownRing.position.y = 0.35;
     group.add(crownRing);
     for (let i = 0; i < 5; i++) {
       const a = (i / 5) * Math.PI * 2;
-      const point = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 12), gold);
+      const point = new THREE.Mesh(
+        new THREE.SphereGeometry(0.045, 12, 12),
+        gold,
+      );
       point.position.set(Math.cos(a) * 0.17, 0.385, Math.sin(a) * 0.17);
       point.castShadow = true;
       group.add(point);
@@ -674,7 +863,9 @@ function dispose3DObject(object) {
   object.traverse((child) => {
     if (child.geometry) child.geometry.dispose();
     if (child.material) {
-      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      const materials = Array.isArray(child.material)
+        ? child.material
+        : [child.material];
       materials.forEach((material) => material.dispose());
     }
   });
@@ -710,7 +901,7 @@ function render3D() {
     if (piece === selectedPiece) {
       const halo = new THREE.Mesh(
         new THREE.TorusGeometry(0.43, 0.035, 10, 48),
-        new THREE.MeshBasicMaterial({ color: '#55f28b' })
+        new THREE.MeshBasicMaterial({ color: "#55f28b" }),
       );
       halo.rotation.x = Math.PI / 2;
       halo.position.set(piece.col - 3.5, 0.25, piece.row - 3.5);
@@ -718,12 +909,18 @@ function render3D() {
       selectedMarker3D = halo;
     }
   });
-  boardGrid.querySelectorAll('.cell.possible').forEach((cell) => {
+  boardGrid.querySelectorAll(".cell.possible").forEach((cell) => {
     const row = Number(cell.dataset.row);
     const col = Number(cell.dataset.col);
     const marker = new THREE.Mesh(
       new THREE.CylinderGeometry(0.25, 0.25, 0.025, 32),
-      new THREE.MeshStandardMaterial({ color: '#40e879', emissive: '#087a32', emissiveIntensity: 0.7, transparent: true, opacity: 0.88 })
+      new THREE.MeshStandardMaterial({
+        color: "#40e879",
+        emissive: "#087a32",
+        emissiveIntensity: 0.7,
+        transparent: true,
+        opacity: 0.88,
+      }),
     );
     marker.position.set(col - 3.5, 0.24, row - 3.5);
     scene3D.add(marker);
@@ -734,12 +931,12 @@ function render3D() {
 
 function createBoard() {
   init3DScene();
-  boardGrid.innerHTML = '';
+  boardGrid.innerHTML = "";
   for (let row = 0; row < SIZE; row++) {
     for (let col = 0; col < SIZE; col++) {
-      const cell = document.createElement('div');
-      cell.classList.add('cell');
-      cell.classList.add((row + col) % 2 === 0 ? 'light' : 'dark');
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.classList.add((row + col) % 2 === 0 ? "light" : "dark");
       cell.dataset.row = row;
       cell.dataset.col = col;
       boardGrid.appendChild(cell);
@@ -752,43 +949,41 @@ function renderPieces() {
   if (scene3D) render3D();
 }
 
-
 // ============================
 // ОТРИМАТИ КЛІТИНКУ
 // ============================
 
 function getCell(row, col) {
-
-  return boardGrid.querySelector(
-    `.cell[data-row="${row}"][data-col="${col}"]`
-  );
+  return boardGrid.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
 }
-
 
 // ============================
 // КЛІК ПО КЛІТИНЦІ
 // ============================
 
 function handleCellClick(row, col) {
+  console.log("HANDLE CELL", {
+    row,
+    col,
+    gameMode,
+    onlineColor,
+    currentPlayer,
+  });
 
   if (gameMode === "online" && onlineColor !== currentPlayer) {
+    console.log("BLOCKED: NOT YOUR TURN");
     return;
   }
 
   // Людина не може керувати чорними
   // під час гри проти AI
-  if (
-    gameMode === "ai" &&
-    currentPlayer === "black"
-  ) {
+  if (gameMode === "ai" && currentPlayer === "black") {
     return;
   }
 
   // Якщо вже вибрана шашка
   if (selectedPiece) {
-
     if (isPossibleMove(row, col)) {
-
       movePiece(row, col);
 
       return;
@@ -798,16 +993,10 @@ function handleCellClick(row, col) {
   // Якщо натиснули на іншу шашку
   const piece = getPiece(row, col);
 
-  if (
-    piece &&
-    piece.color === currentPlayer
-  ) {
-
+  if (piece && piece.color === currentPlayer) {
     // Якщо є обов'язкове взяття
     if (hasAnyCapture(currentPlayer)) {
-
-      const captures =
-        getCaptures(piece);
+      const captures = getCaptures(piece);
 
       if (captures.length === 0) {
         return;
@@ -818,13 +1007,11 @@ function handleCellClick(row, col) {
   }
 }
 
-
 // ============================
 // ВИБІР ШАШКИ
 // ============================
 
 function selectPiece(piece) {
-
   if (piece.color !== currentPlayer) {
     return;
   }
@@ -834,22 +1021,18 @@ function selectPiece(piece) {
   showPossibleMoves(piece);
 }
 
-
 // ============================
 // ПОКАЗ МОЖЛИВИХ ХОДІВ
 // ============================
 
 function showPossibleMoves(piece) {
-
   renderPieces();
 
-  const captures =
-    getCaptures(piece);
+  const captures = getCaptures(piece);
 
   // Якщо є взяття
   if (captures.length > 0) {
-
-    captures.forEach(move => {
+    captures.forEach((move) => {
       const cell = getCell(move.row, move.col);
       if (cell) cell.classList.add("possible");
     });
@@ -863,33 +1046,28 @@ function showPossibleMoves(piece) {
     return;
   }
 
-
   // ============================
   // ДАМКА
   // ============================
 
   if (piece.king) {
-
     const directions = [
       [-1, -1],
       [-1, 1],
       [1, -1],
-      [1, 1]
+      [1, 1],
     ];
 
     directions.forEach(([dr, dc]) => {
-
       let row = piece.row + dr;
       let col = piece.col + dc;
 
       while (isInside(row, col)) {
-
         if (getPiece(row, col)) {
           break;
         }
 
-        const cell =
-          getCell(row, col);
+        const cell = getCell(row, col);
 
         if (cell) {
           cell.classList.add("possible");
@@ -903,36 +1081,24 @@ function showPossibleMoves(piece) {
     return;
   }
 
-
   // ============================
   // ЗВИЧАЙНА ШАШКА
   // ============================
 
-  const direction =
-    piece.color === "white"
-      ? -1
-      : 1;
+  const direction = piece.color === "white" ? -1 : 1;
 
   const moves = [
     [direction, -1],
-    [direction, 1]
+    [direction, 1],
   ];
 
   moves.forEach(([dr, dc]) => {
+    const row = piece.row + dr;
 
-    const row =
-      piece.row + dr;
+    const col = piece.col + dc;
 
-    const col =
-      piece.col + dc;
-
-    if (
-      isInside(row, col) &&
-      !getPiece(row, col)
-    ) {
-
-      const cell =
-        getCell(row, col);
+    if (isInside(row, col) && !getPiece(row, col)) {
+      const cell = getCell(row, col);
 
       if (cell) {
         cell.classList.add("possible");
@@ -942,13 +1108,11 @@ function showPossibleMoves(piece) {
   render3D();
 }
 
-
 // ============================
 // ПЕРЕВІРКА ХОДУ
 // ============================
 
 function isPossibleMove(row, col) {
-
   if (!selectedPiece) {
     return false;
   }
@@ -961,74 +1125,45 @@ function isPossibleMove(row, col) {
     return false;
   }
 
-
   // ============================
   // ВЗЯТТЯ
   // ============================
 
-  const captures =
-    getCaptures(selectedPiece);
+  const captures = getCaptures(selectedPiece);
 
-  const capture =
-    captures.find(move =>
-      move.row === row &&
-      move.col === col
-    );
+  const capture = captures.find((move) => move.row === row && move.col === col);
 
   if (capture) {
     return true;
   }
-
 
   // Якщо є обов'язкове взяття
   if (hasAnyCapture(currentPlayer)) {
     return false;
   }
 
-
   // ============================
   // ДАМКА
   // ============================
 
   if (selectedPiece.king) {
+    const rowDiff = Math.abs(row - selectedPiece.row);
 
-    const rowDiff =
-      Math.abs(
-        row - selectedPiece.row
-      );
-
-    const colDiff =
-      Math.abs(
-        col - selectedPiece.col
-      );
+    const colDiff = Math.abs(col - selectedPiece.col);
 
     if (rowDiff !== colDiff) {
       return false;
     }
 
-    const rowDirection =
-      row > selectedPiece.row
-        ? 1
-        : -1;
+    const rowDirection = row > selectedPiece.row ? 1 : -1;
 
-    const colDirection =
-      col > selectedPiece.col
-        ? 1
-        : -1;
+    const colDirection = col > selectedPiece.col ? 1 : -1;
 
-    let checkRow =
-      selectedPiece.row +
-      rowDirection;
+    let checkRow = selectedPiece.row + rowDirection;
 
-    let checkCol =
-      selectedPiece.col +
-      colDirection;
+    let checkCol = selectedPiece.col + colDirection;
 
-    while (
-      checkRow !== row &&
-      checkCol !== col
-    ) {
-
+    while (checkRow !== row && checkCol !== col) {
       if (getPiece(checkRow, checkCol)) {
         return false;
       }
@@ -1040,59 +1175,35 @@ function isPossibleMove(row, col) {
     return true;
   }
 
-
   // ============================
   // ЗВИЧАЙНА ШАШКА
   // ============================
 
-  const direction =
-    selectedPiece.color === "white"
-      ? -1
-      : 1;
+  const direction = selectedPiece.color === "white" ? -1 : 1;
 
-  const rowDiff =
-    row - selectedPiece.row;
+  const rowDiff = row - selectedPiece.row;
 
-  const colDiff =
-    Math.abs(
-      col - selectedPiece.col
-    );
+  const colDiff = Math.abs(col - selectedPiece.col);
 
-  return (
-    rowDiff === direction &&
-    colDiff === 1
-  );
+  return rowDiff === direction && colDiff === 1;
 }
-
 
 // ============================
 // ХІД
 // ============================
 
 function movePiece(row, col) {
+  const captures = getCaptures(selectedPiece);
 
-  const captures =
-    getCaptures(selectedPiece);
-
-  const capture =
-    captures.find(move =>
-      move.row === row &&
-      move.col === col
-    );
-
+  const capture = captures.find((move) => move.row === row && move.col === col);
 
   // ============================
   // ВИДАЛЯЄМО ВЗЯТУ ШАШКУ
   // ============================
 
   if (capture) {
-
-    pieces =
-      pieces.filter(piece =>
-        piece !== capture.enemy
-      );
+    pieces = pieces.filter((piece) => piece !== capture.enemy);
   }
-
 
   // ============================
   // ПЕРЕМІЩЕННЯ
@@ -1101,48 +1212,31 @@ function movePiece(row, col) {
   selectedPiece.row = row;
   selectedPiece.col = col;
 
-
   // ============================
   // ПЕРЕТВОРЕННЯ НА ДАМКУ
   // ============================
 
-  if (
-    selectedPiece.color === "white" &&
-    selectedPiece.row === 0
-  ) {
-
+  if (selectedPiece.color === "white" && selectedPiece.row === 0) {
     selectedPiece.king = true;
   }
 
-  if (
-    selectedPiece.color === "black" &&
-    selectedPiece.row === SIZE - 1
-  ) {
-
+  if (selectedPiece.color === "black" && selectedPiece.row === SIZE - 1) {
     selectedPiece.king = true;
   }
-
 
   // ============================
   // НАСТУПНЕ ВЗЯТТЯ
   // ============================
 
   if (capture) {
-
-    const nextCaptures =
-      getCaptures(selectedPiece);
+    const nextCaptures = getCaptures(selectedPiece);
 
     if (nextCaptures.length > 0) {
-
       // ============================
       // AI ПРОДОВЖУЄ ВЗЯТТЯ
       // ============================
 
-      if (
-        gameMode === "ai" &&
-        currentPlayer === "black"
-      ) {
-
+      if (gameMode === "ai" && currentPlayer === "black") {
         aiCapturing = true;
 
         renderPieces();
@@ -1154,28 +1248,23 @@ function movePiece(row, col) {
         return;
       }
 
-
       // ============================
       // ЛЮДИНА ПРОДОВЖУЄ ВЗЯТТЯ
       // ============================
 
       renderPieces();
 
-      showPossibleMoves(
-        selectedPiece
-      );
+      showPossibleMoves(selectedPiece);
 
       return;
     }
   }
-
 
   // ============================
   // AI БІЛЬШЕ НЕ Б'Є
   // ============================
 
   aiCapturing = false;
-
 
   // ============================
   // ЗАКІНЧУЄМО ХІД
@@ -1191,75 +1280,64 @@ function movePiece(row, col) {
 
   checkWinner();
 
-  if (gameMode === "online" && onlineSocket && onlineRoomCode && !applyingRemoteState) {
+  if (
+    gameMode === "online" &&
+    onlineSocket &&
+    onlineRoomCode &&
+    !applyingRemoteState
+  ) {
     onlineSocket.emit("game-state", {
       roomCode: onlineRoomCode,
-      state: serializeOnlineState()
+      state: serializeOnlineState(),
     });
   }
-
 
   // ============================
   // ХІД AI
   // ============================
 
-  if (
-    gameMode === "ai" &&
-    currentPlayer === "black" &&
-    gameStarted
-  ) {
-
+  if (gameMode === "ai" && currentPlayer === "black" && gameStarted) {
     setTimeout(() => {
       aiMove();
     }, 500);
   }
 }
 
-
 // ============================
 // ОТРИМАТИ ВЗЯТТЯ
 // ============================
 
 function getCaptures(piece) {
-
   const captures = [];
-
 
   // ============================
   // ДАМКА
   // ============================
 
   if (piece.king) {
-
     const directions = [
       [-1, -1],
       [-1, 1],
       [1, -1],
-      [1, 1]
+      [1, 1],
     ];
 
     directions.forEach(([dr, dc]) => {
-
       let row = piece.row + dr;
       let col = piece.col + dc;
 
       let enemy = null;
 
       while (isInside(row, col)) {
-
-        const target =
-          getPiece(row, col);
-
+        const target = getPiece(row, col);
 
         // Порожня клітинка
         if (!target) {
-
           if (enemy) {
-
             captures.push({
               row: row,
               col: col,
-              enemy: enemy
+              enemy: enemy,
             });
           }
 
@@ -1269,20 +1347,15 @@ function getCaptures(piece) {
           continue;
         }
 
-
         // Власна шашка
-        if (
-          target.color === piece.color
-        ) {
+        if (target.color === piece.color) {
           break;
         }
-
 
         // Другий ворог
         if (enemy) {
           break;
         }
-
 
         // Перший ворог
         enemy = target;
@@ -1295,7 +1368,6 @@ function getCaptures(piece) {
     return captures;
   }
 
-
   // ============================
   // ЗВИЧАЙНА ШАШКА
   // ============================
@@ -1304,55 +1376,31 @@ function getCaptures(piece) {
     [-1, -1],
     [-1, 1],
     [1, -1],
-    [1, 1]
+    [1, 1],
   ];
 
   directions.forEach(([dr, dc]) => {
+    const enemyRow = piece.row + dr;
 
-    const enemyRow =
-      piece.row + dr;
+    const enemyCol = piece.col + dc;
 
-    const enemyCol =
-      piece.col + dc;
+    const landingRow = piece.row + dr * 2;
 
-    const landingRow =
-      piece.row + dr * 2;
+    const landingCol = piece.col + dc * 2;
 
-    const landingCol =
-      piece.col + dc * 2;
-
-
-    if (
-      !isInside(enemyRow, enemyCol) ||
-      !isInside(landingRow, landingCol)
-    ) {
+    if (!isInside(enemyRow, enemyCol) || !isInside(landingRow, landingCol)) {
       return;
     }
 
+    const enemy = getPiece(enemyRow, enemyCol);
 
-    const enemy =
-      getPiece(
-        enemyRow,
-        enemyCol
-      );
+    const landing = getPiece(landingRow, landingCol);
 
-    const landing =
-      getPiece(
-        landingRow,
-        landingCol
-      );
-
-
-    if (
-      enemy &&
-      enemy.color !== piece.color &&
-      !landing
-    ) {
-
+    if (enemy && enemy.color !== piece.color && !landing) {
       captures.push({
         row: landingRow,
         col: landingCol,
-        enemy: enemy
+        enemy: enemy,
       });
     }
   });
@@ -1360,51 +1408,36 @@ function getCaptures(piece) {
   return captures;
 }
 
-
 // ============================
 // ЧИ Є ВЗЯТТЯ
 // ============================
 
 function hasAnyCapture(color) {
-
-  return pieces.some(piece => {
-
+  return pieces.some((piece) => {
     if (piece.color !== color) {
       return false;
     }
 
-    return (
-      getCaptures(piece).length > 0
-    );
+    return getCaptures(piece).length > 0;
   });
 }
-
 
 // ============================
 // ЗМІНА ХОДУ
 // ============================
 
 function changeTurn() {
-
-  currentPlayer =
-    currentPlayer === "white"
-      ? "black"
-      : "white";
+  currentPlayer = currentPlayer === "white" ? "black" : "white";
 
   updateTurn();
 }
-
 
 // ============================
 // ОНОВИТИ ТЕКСТ ХОДУ
 // ============================
 
 function updateTurn() {
-
-  turnText.textContent =
-    currentPlayer === "white"
-      ? "Білі"
-      : "Чорні";
+  turnText.textContent = currentPlayer === "white" ? "Білі" : "Чорні";
 
   // Auto-switch the camera only in local two-player mode.
   // Against AI, keep the current view unchanged when the turn changes.
@@ -1413,147 +1446,97 @@ function updateTurn() {
   }
 }
 
-
 // ============================
 // ТАЙМЕР
 // ============================
 
 function startTimer() {
-
   stopTimer();
 
   timer = 30;
 
   updateTimer();
 
-  timerInterval =
-    setInterval(() => {
+  timerInterval = setInterval(() => {
+    timer--;
 
-      timer--;
+    updateTimer();
 
-      updateTimer();
+    if (timer <= 0) {
+      stopTimer();
 
-      if (timer <= 0) {
-
-        stopTimer();
-
-        timeOut();
-      }
-
-    }, 1000);
+      timeOut();
+    }
+  }, 1000);
 }
-
 
 // ============================
 // ЗУПИНИТИ ТАЙМЕР
 // ============================
 
 function stopTimer() {
-
   if (timerInterval) {
-
-    clearInterval(
-      timerInterval
-    );
+    clearInterval(timerInterval);
 
     timerInterval = null;
   }
 }
-
 
 // ============================
 // ОНОВИТИ ТАЙМЕР
 // ============================
 
 function updateTimer() {
+  const whiteTime = document.getElementById("whiteTime");
 
-  const whiteTime =
-    document.getElementById(
-      "whiteTime"
-    );
+  const blackTime = document.getElementById("blackTime");
 
-  const blackTime =
-    document.getElementById(
-      "blackTime"
-    );
+  const progress = document.getElementById("timerProgress");
 
-  const progress =
-    document.getElementById(
-      "timerProgress"
-    );
-
-
-  if (
-    !whiteTime ||
-    !blackTime ||
-    !progress
-  ) {
+  if (!whiteTime || !blackTime || !progress) {
     return;
   }
 
-
   if (currentPlayer === "white") {
-
     whiteTime.textContent = timer;
     blackTime.textContent = "30";
-
   } else {
-
     blackTime.textContent = timer;
     whiteTime.textContent = "30";
   }
 
-
-  progress.style.width =
-    `${(timer / 30) * 100}%`;
+  progress.style.width = `${(timer / 30) * 100}%`;
 }
-
 
 // ============================
 // ЧАС ВИЙШОВ
 // ============================
 
 function timeOut() {
-
   gameStarted = false;
 
   aiCapturing = false;
   selectedPiece = null;
 
-  const winner =
-    currentPlayer === "white"
-      ? "Чорні"
-      : "Білі";
+  const winner = currentPlayer === "white" ? "Чорні" : "Білі";
 
-  alert(
-    `⏰ Час вийшов!\n\nПеремогли: ${winner}!`
-  );
+  alert(`⏰ Час вийшов!\n\nПеремогли: ${winner}!`);
 }
-
 
 // ============================
 // ПЕРЕВІРКА ПЕРЕМОЖЦЯ
 // ============================
 
 function checkWinner() {
+  const whitePieces = pieces.filter((piece) => piece.color === "white");
 
-  const whitePieces =
-    pieces.filter(piece =>
-      piece.color === "white"
-    );
-
-  const blackPieces =
-    pieces.filter(piece =>
-      piece.color === "black"
-    );
-
+  const blackPieces = pieces.filter((piece) => piece.color === "black");
 
   // ============================
   // НЕМАЄ БІЛИХ
   // ============================
 
   if (whitePieces.length === 0) {
-
     gameStarted = false;
 
     stopTimer();
@@ -1563,13 +1546,11 @@ function checkWinner() {
     return;
   }
 
-
   // ============================
   // НЕМАЄ ЧОРНИХ
   // ============================
 
   if (blackPieces.length === 0) {
-
     gameStarted = false;
 
     stopTimer();
@@ -1579,97 +1560,64 @@ function checkWinner() {
     return;
   }
 
-
   // ============================
   // ПЕРЕВІРКА ХОДІВ
   // ============================
 
-  const canMove =
-    pieces.some(piece => {
+  const canMove = pieces.some((piece) => {
+    if (piece.color !== currentPlayer) {
+      return false;
+    }
 
-      if (
-        piece.color !== currentPlayer
-      ) {
-        return false;
-      }
+    if (getCaptures(piece).length > 0) {
+      return true;
+    }
 
+    if (hasAnyCapture(currentPlayer)) {
+      return false;
+    }
 
-      if (
-        getCaptures(piece).length > 0
-      ) {
-        return true;
-      }
-
-
-      if (
-        hasAnyCapture(currentPlayer)
-      ) {
-        return false;
-      }
-
-
-      return hasNormalMove(piece);
-    });
-
+    return hasNormalMove(piece);
+  });
 
   // ============================
   // НЕМАЄ ХОДІВ
   // ============================
 
   if (!canMove) {
-
     gameStarted = false;
 
     stopTimer();
 
-    const winner =
-      currentPlayer === "white"
-        ? "Чорні"
-        : "Білі";
+    const winner = currentPlayer === "white" ? "Чорні" : "Білі";
 
-    alert(
-      `🏆 ${winner} перемогли!`
-    );
+    alert(`🏆 ${winner} перемогли!`);
   }
 }
-
 
 // ============================
 // ЧИ Є ЗВИЧАЙНИЙ ХІД
 // ============================
 
 function hasNormalMove(piece) {
-
   // ============================
   // ДАМКА
   // ============================
 
   if (piece.king) {
-
     const directions = [
       [-1, -1],
       [-1, 1],
       [1, -1],
-      [1, 1]
+      [1, 1],
     ];
 
-    for (
-      const [dr, dc]
-      of directions
-    ) {
+    for (const [dr, dc] of directions) {
+      const row = piece.row + dr;
 
-      const row =
-        piece.row + dr;
+      const col = piece.col + dc;
 
-      const col =
-        piece.col + dc;
-
-
-      if (
-        isInside(row, col) &&
-        !getPiece(row, col)
-      ) {
-
+      if (isInside(row, col) && !getPiece(row, col)) {
         return true;
       }
     }
@@ -1677,45 +1625,31 @@ function hasNormalMove(piece) {
     return false;
   }
 
-
   // ============================
   // ЗВИЧАЙНА ШАШКА
   // ============================
 
-  const direction =
-    piece.color === "white"
-      ? -1
-      : 1;
+  const direction = piece.color === "white" ? -1 : 1;
 
   const moves = [
     [direction, -1],
-    [direction, 1]
+    [direction, 1],
   ];
 
-
   return moves.some(([dr, dc]) => {
+    const row = piece.row + dr;
 
-    const row =
-      piece.row + dr;
+    const col = piece.col + dc;
 
-    const col =
-      piece.col + dc;
-
-
-    return (
-      isInside(row, col) &&
-      !getPiece(row, col)
-    );
+    return isInside(row, col) && !getPiece(row, col);
   });
 }
-
 
 // ============================
 // AI
 // ============================
 
 function aiMove() {
-
   if (!gameStarted) {
     return;
   }
@@ -1727,872 +1661,572 @@ function aiMove() {
   let possibleMoves = [];
 
   // ============================
-// EASY
-// ============================
+  // EASY
+  // ============================
 
-function getEasyMove(moves) {
-
-  return moves[
-    Math.floor(
-      Math.random() * moves.length
-    )
-  ];
-}
-
-
-// ============================
-// MEDIUM
-// ============================
-
-function getMediumMove(moves) {
-
-  let bestMoves = [];
-  let bestScore = -Infinity;
-
-
-  moves.forEach(option => {
-
-    let score = 0;
-
-    const piece = option.piece;
-    const move = option.move;
-
-
-    // Взяття — хороший хід
-    if (option.capture) {
-      score += 10;
-    }
-
-
-    // Стати дамкою — дуже хороший хід
-    if (
-      !piece.king &&
-      move.row === SIZE - 1
-    ) {
-
-      score += 8;
-    }
-
-
-    // Просування вперед
-    score += move.row;
-
-
-    if (score > bestScore) {
-
-      bestScore = score;
-      bestMoves = [option];
-
-    } else if (score === bestScore) {
-
-      bestMoves.push(option);
-    }
-
-  });
-
-
-  return bestMoves[
-    Math.floor(
-      Math.random() * bestMoves.length
-    )
-  ];
-}
-
-
-
-// ============================
-// HARD AI
-// ============================
-
-function getHardMove(moves) {
-
-  let bestMove = moves[0];
-  let bestScore = -Infinity;
-
-  for (const move of moves) {
-
-    const newPieces = simulateMove(
-      pieces,
-      move
-    );
-
-    const score = minimax(
-      newPieces,
-      7,
-      false
-    );
-
-    if (score > bestScore) {
-
-      bestScore = score;
-      bestMove = move;
-
-    }
+  function getEasyMove(moves) {
+    return moves[Math.floor(Math.random() * moves.length)];
   }
 
-  return bestMove;
-}
+  // ============================
+  // MEDIUM
+  // ============================
 
-// ============================
-// MINIMAX
-// ============================
+  function getMediumMove(moves) {
+    let bestMoves = [];
+    let bestScore = -Infinity;
 
-function minimax(boardState, depth, maximizingPlayer) {
+    moves.forEach((option) => {
+      let score = 0;
 
-  if (depth === 0) {
-    return evaluateBoard(boardState);
+      const piece = option.piece;
+      const move = option.move;
+
+      // Взяття — хороший хід
+      if (option.capture) {
+        score += 10;
+      }
+
+      // Стати дамкою — дуже хороший хід
+      if (!piece.king && move.row === SIZE - 1) {
+        score += 8;
+      }
+
+      // Просування вперед
+      score += move.row;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestMoves = [option];
+      } else if (score === bestScore) {
+        bestMoves.push(option);
+      }
+    });
+
+    return bestMoves[Math.floor(Math.random() * bestMoves.length)];
   }
 
+  // ============================
+  // HARD AI
+  // ============================
 
-  // ----------------------------
-  // Хід AI
-  // ----------------------------
-
-  if (maximizingPlayer) {
-
-    const moves =
-      getAllMoves(boardState, "black");
-
-    if (moves.length === 0) {
-      return -10000;
-    }
-
+  function getHardMove(moves) {
+    let bestMove = moves[0];
     let bestScore = -Infinity;
 
     for (const move of moves) {
+      const newPieces = simulateMove(pieces, move);
 
-      const newBoard =
-        simulateMove(boardState, move);
+      const score = minimax(newPieces, 7, false);
 
-      const score =
-        minimax(
-          newBoard,
-          depth - 1,
-          false
-        );
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
 
-      bestScore =
-        Math.max(bestScore, score);
+    return bestMove;
+  }
+
+  // ============================
+  // MINIMAX
+  // ============================
+
+  function minimax(boardState, depth, maximizingPlayer) {
+    if (depth === 0) {
+      return evaluateBoard(boardState);
+    }
+
+    // ----------------------------
+    // Хід AI
+    // ----------------------------
+
+    if (maximizingPlayer) {
+      const moves = getAllMoves(boardState, "black");
+
+      if (moves.length === 0) {
+        return -10000;
+      }
+
+      let bestScore = -Infinity;
+
+      for (const move of moves) {
+        const newBoard = simulateMove(boardState, move);
+
+        const score = minimax(newBoard, depth - 1, false);
+
+        bestScore = Math.max(bestScore, score);
+      }
+
+      return bestScore;
+    }
+
+    // ----------------------------
+    // Хід гравця
+    // ----------------------------
+
+    const moves = getAllMoves(boardState, "white");
+
+    if (moves.length === 0) {
+      return 10000;
+    }
+
+    let bestScore = Infinity;
+
+    for (const move of moves) {
+      const newBoard = simulateMove(boardState, move);
+
+      const score = minimax(newBoard, depth - 1, true);
+
+      bestScore = Math.min(bestScore, score);
     }
 
     return bestScore;
   }
 
+  // ============================
+  // ОЦІНКА ДОШКИ
+  // ============================
 
-  // ----------------------------
-  // Хід гравця
-  // ----------------------------
+  function evaluateBoard(boardState) {
+    let score = 0;
 
-  const moves =
-    getAllMoves(boardState, "white");
+    boardState.forEach((piece) => {
+      // Звичайна шашка
+      if (!piece.king) {
+        if (piece.color === "black") {
+          score += 100;
+        } else {
+          score -= 100;
+        }
+      }
 
-  if (moves.length === 0) {
-    return 10000;
+      // Дамка набагато цінніша
+      else {
+        if (piece.color === "black") {
+          score += 175;
+        } else {
+          score -= 175;
+        }
+      }
+
+      // ----------------------------
+      // Позиція
+      // ----------------------------
+
+      if (piece.color === "black") {
+        score += piece.row * 3;
+      } else {
+        score -= (SIZE - 1 - piece.row) * 3;
+      }
+
+      // ----------------------------
+      // Центр дошки
+      // ----------------------------
+
+      if (
+        piece.col >= 2 &&
+        piece.col <= 5 &&
+        piece.row >= 2 &&
+        piece.row <= 5
+      ) {
+        if (piece.color === "black") {
+          score += 5;
+        } else {
+          score -= 5;
+        }
+      }
+    });
+
+    return score;
   }
 
-  let bestScore = Infinity;
+  // ============================
+  // ОТРИМАТИ ВСІ ХОДИ
+  // ============================
 
-  for (const move of moves) {
+  function getAllMoves(boardState, color) {
+    const moves = [];
 
-    const newBoard =
-      simulateMove(boardState, move);
+    const mustCapture = hasCaptureInBoard(boardState, color);
 
-    const score =
-      minimax(
-        newBoard,
-        depth - 1,
-        true
-      );
-
-    bestScore =
-      Math.min(bestScore, score);
-  }
-
-  return bestScore;
-}
-
-
-// ============================
-// ОЦІНКА ДОШКИ
-// ============================
-
-function evaluateBoard(boardState) {
-
-  let score = 0;
-
-  boardState.forEach(piece => {
-
-    // Звичайна шашка
-    if (!piece.king) {
-
-      if (piece.color === "black") {
-        score += 100;
-      } else {
-        score -= 100;
+    boardState.forEach((piece) => {
+      if (piece.color !== color) {
+        return;
       }
 
-    }
+      // ----------------------------
+      // Якщо треба бити
+      // ----------------------------
 
-    // Дамка набагато цінніша
-    else {
+      if (mustCapture) {
+        const captures = getCapturesFromBoard(boardState, piece);
 
-      if (piece.color === "black") {
-        score += 175;
-      } else {
-        score -= 175;
-      }
-
-    }
-
-
-    // ----------------------------
-    // Позиція
-    // ----------------------------
-
-    if (piece.color === "black") {
-
-      score += piece.row * 3;
-
-    } else {
-
-      score -= (SIZE - 1 - piece.row) * 3;
-
-    }
-
-
-    // ----------------------------
-    // Центр дошки
-    // ----------------------------
-
-    if (
-      piece.col >= 2 &&
-      piece.col <= 5 &&
-      piece.row >= 2 &&
-      piece.row <= 5
-    ) {
-
-      if (piece.color === "black") {
-        score += 5;
-      } else {
-        score -= 5;
-      }
-    }
-
-  });
-
-  return score;
-}
-
-
-// ============================
-// ОТРИМАТИ ВСІ ХОДИ
-// ============================
-
-function getAllMoves(boardState, color) {
-
-  const moves = [];
-
-  const mustCapture =
-    hasCaptureInBoard(
-      boardState,
-      color
-    );
-
-
-  boardState.forEach(piece => {
-
-    if (piece.color !== color) {
-      return;
-    }
-
-
-    // ----------------------------
-    // Якщо треба бити
-    // ----------------------------
-
-    if (mustCapture) {
-
-      const captures =
-        getCapturesFromBoard(
-          boardState,
-          piece
-        );
-
-      captures.forEach(capture => {
-
-        moves.push({
-          piece: piece,
-          move: capture,
-          capture: true
+        captures.forEach((capture) => {
+          moves.push({
+            piece: piece,
+            move: capture,
+            capture: true,
+          });
         });
 
-      });
+        return;
+      }
 
-      return;
-    }
+      // ----------------------------
+      // Дамка
+      // ----------------------------
 
+      if (piece.king) {
+        const directions = [
+          [-1, -1],
+          [-1, 1],
+          [1, -1],
+          [1, 1],
+        ];
 
-    // ----------------------------
-    // Дамка
-    // ----------------------------
+        directions.forEach(([dr, dc]) => {
+          let row = piece.row + dr;
 
-    if (piece.king) {
+          let col = piece.col + dc;
+
+          while (isInside(row, col)) {
+            if (getPieceFromBoard(boardState, row, col)) {
+              break;
+            }
+
+            moves.push({
+              piece: piece,
+              move: {
+                row: row,
+                col: col,
+              },
+              capture: false,
+            });
+
+            row += dr;
+            col += dc;
+          }
+        });
+
+        return;
+      }
+
+      // ----------------------------
+      // Звичайна шашка
+      // ----------------------------
+
+      const direction = color === "black" ? 1 : -1;
 
       const directions = [
-        [-1, -1],
-        [-1, 1],
-        [1, -1],
-        [1, 1]
+        [direction, -1],
+        [direction, 1],
       ];
 
-
       directions.forEach(([dr, dc]) => {
+        const row = piece.row + dr;
 
-        let row =
-          piece.row + dr;
+        const col = piece.col + dc;
 
-        let col =
-          piece.col + dc;
-
-
-        while (
-          isInside(row, col)
-        ) {
-
-          if (
-            getPieceFromBoard(
-              boardState,
-              row,
-              col
-            )
-          ) {
-            break;
-          }
-
-
+        if (isInside(row, col) && !getPieceFromBoard(boardState, row, col)) {
           moves.push({
             piece: piece,
             move: {
               row: row,
-              col: col
+              col: col,
             },
-            capture: false
+            capture: false,
           });
+        }
+      });
+    });
 
+    return moves;
+  }
+
+  // ============================
+  // ПЕРЕВІРКА ВЗЯТТЯ
+  // ============================
+
+  function hasCaptureInBoard(boardState, color) {
+    return boardState.some((piece) => {
+      if (piece.color !== color) {
+        return false;
+      }
+
+      return getCapturesFromBoard(boardState, piece).length > 0;
+    });
+  }
+
+  // ============================
+  // ВЗЯТТЯ НА КОПІЇ ДОШКИ
+  // ============================
+
+  function getCapturesFromBoard(boardState, piece) {
+    const captures = [];
+
+    // ----------------------------
+    // ДАМКА
+    // ----------------------------
+
+    if (piece.king) {
+      const directions = [
+        [-1, -1],
+        [-1, 1],
+        [1, -1],
+        [1, 1],
+      ];
+
+      directions.forEach(([dr, dc]) => {
+        let row = piece.row + dr;
+
+        let col = piece.col + dc;
+
+        let enemy = null;
+
+        while (isInside(row, col)) {
+          const target = getPieceFromBoard(boardState, row, col);
+
+          // Порожня клітинка
+          if (!target) {
+            if (enemy) {
+              captures.push({
+                row: row,
+                col: col,
+                enemy: enemy,
+              });
+            }
+
+            row += dr;
+            col += dc;
+
+            continue;
+          }
+
+          // Своя шашка
+          if (target.color === piece.color) {
+            break;
+          }
+
+          // Другий ворог
+          if (enemy) {
+            break;
+          }
+
+          enemy = target;
 
           row += dr;
           col += dc;
         }
-
       });
 
-      return;
+      return captures;
     }
 
-
     // ----------------------------
-    // Звичайна шашка
+    // ЗВИЧАЙНА ШАШКА
     // ----------------------------
-
-    const direction =
-      color === "black"
-        ? 1
-        : -1;
-
-
-    const directions = [
-      [direction, -1],
-      [direction, 1]
-    ];
-
-
-    directions.forEach(([dr, dc]) => {
-
-      const row =
-        piece.row + dr;
-
-      const col =
-        piece.col + dc;
-
-
-      if (
-        isInside(row, col) &&
-        !getPieceFromBoard(
-          boardState,
-          row,
-          col
-        )
-      ) {
-
-        moves.push({
-          piece: piece,
-          move: {
-            row: row,
-            col: col
-          },
-          capture: false
-        });
-
-      }
-
-    });
-
-  });
-
-
-  return moves;
-}
-
-
-// ============================
-// ПЕРЕВІРКА ВЗЯТТЯ
-// ============================
-
-function hasCaptureInBoard(
-  boardState,
-  color
-) {
-
-  return boardState.some(piece => {
-
-    if (piece.color !== color) {
-      return false;
-    }
-
-    return (
-      getCapturesFromBoard(
-        boardState,
-        piece
-      ).length > 0
-    );
-
-  });
-}
-
-
-// ============================
-// ВЗЯТТЯ НА КОПІЇ ДОШКИ
-// ============================
-
-function getCapturesFromBoard(
-  boardState,
-  piece
-) {
-
-  const captures = [];
-
-
-  // ----------------------------
-  // ДАМКА
-  // ----------------------------
-
-  if (piece.king) {
 
     const directions = [
       [-1, -1],
       [-1, 1],
       [1, -1],
-      [1, 1]
+      [1, 1],
     ];
 
-
     directions.forEach(([dr, dc]) => {
+      const enemyRow = piece.row + dr;
 
-      let row =
-        piece.row + dr;
+      const enemyCol = piece.col + dc;
 
-      let col =
-        piece.col + dc;
+      const landingRow = piece.row + dr * 2;
 
-      let enemy = null;
+      const landingCol = piece.col + dc * 2;
 
-
-      while (
-        isInside(row, col)
-      ) {
-
-        const target =
-          getPieceFromBoard(
-            boardState,
-            row,
-            col
-          );
-
-
-        // Порожня клітинка
-        if (!target) {
-
-          if (enemy) {
-
-            captures.push({
-              row: row,
-              col: col,
-              enemy: enemy
-            });
-
-          }
-
-          row += dr;
-          col += dc;
-
-          continue;
-        }
-
-
-        // Своя шашка
-        if (
-          target.color === piece.color
-        ) {
-          break;
-        }
-
-
-        // Другий ворог
-        if (enemy) {
-          break;
-        }
-
-
-        enemy = target;
-
-        row += dr;
-        col += dc;
+      if (!isInside(enemyRow, enemyCol) || !isInside(landingRow, landingCol)) {
+        return;
       }
 
-    });
+      const enemy = getPieceFromBoard(boardState, enemyRow, enemyCol);
 
+      const landing = getPieceFromBoard(boardState, landingRow, landingCol);
+
+      if (enemy && enemy.color !== piece.color && !landing) {
+        captures.push({
+          row: landingRow,
+          col: landingCol,
+          enemy: enemy,
+        });
+      }
+    });
 
     return captures;
   }
 
+  // ============================
+  // ОТРИМАТИ ШАШКУ З КОПІЇ
+  // ============================
 
-  // ----------------------------
-  // ЗВИЧАЙНА ШАШКА
-  // ----------------------------
+  function getPieceFromBoard(boardState, row, col) {
+    return boardState.find((piece) => piece.row === row && piece.col === col);
+  }
 
-  const directions = [
-    [-1, -1],
-    [-1, 1],
-    [1, -1],
-    [1, 1]
-  ];
+  // ============================
+  // СИМУЛЯЦІЯ ХОДУ
+  // ============================
 
-
-  directions.forEach(([dr, dc]) => {
-
-    const enemyRow =
-      piece.row + dr;
-
-    const enemyCol =
-      piece.col + dc;
-
-    const landingRow =
-      piece.row + dr * 2;
-
-    const landingCol =
-      piece.col + dc * 2;
-
-
-    if (
-      !isInside(
-        enemyRow,
-        enemyCol
-      ) ||
-      !isInside(
-        landingRow,
-        landingCol
-      )
-    ) {
-      return;
-    }
-
-
-    const enemy =
-      getPieceFromBoard(
-        boardState,
-        enemyRow,
-        enemyCol
-      );
-
-
-    const landing =
-      getPieceFromBoard(
-        boardState,
-        landingRow,
-        landingCol
-      );
-
-
-    if (
-      enemy &&
-      enemy.color !== piece.color &&
-      !landing
-    ) {
-
-      captures.push({
-        row: landingRow,
-        col: landingCol,
-        enemy: enemy
-      });
-
-    }
-
-  });
-
-
-  return captures;
-}
-
-
-// ============================
-// ОТРИМАТИ ШАШКУ З КОПІЇ
-// ============================
-
-function getPieceFromBoard(
-  boardState,
-  row,
-  col
-) {
-
-  return boardState.find(piece =>
-    piece.row === row &&
-    piece.col === col
-  );
-}
-
-
-// ============================
-// СИМУЛЯЦІЯ ХОДУ
-// ============================
-
-function simulateMove(
-  boardState,
-  option
-) {
-
-  // Створюємо копію дошки
-  const newBoard =
-    boardState.map(piece => ({
+  function simulateMove(boardState, option) {
+    // Створюємо копію дошки
+    const newBoard = boardState.map((piece) => ({
       row: piece.row,
       col: piece.col,
       color: piece.color,
-      king: piece.king
+      king: piece.king,
     }));
 
-
-  // Знаходимо шашку
-  const piece =
-    newBoard.find(p =>
-      p.row === option.piece.row &&
-      p.col === option.piece.col &&
-      p.color === option.piece.color
+    // Знаходимо шашку
+    const piece = newBoard.find(
+      (p) =>
+        p.row === option.piece.row &&
+        p.col === option.piece.col &&
+        p.color === option.piece.color,
     );
 
+    if (!piece) {
+      return newBoard;
+    }
 
-  if (!piece) {
-    return newBoard;
-  }
+    // ----------------------------
+    // ВИДАЛЕННЯ ВОРОГА
+    // ----------------------------
 
-
-  // ----------------------------
-  // ВИДАЛЕННЯ ВОРОГА
-  // ----------------------------
-
-  if (
-    option.capture &&
-    option.move.enemy
-  ) {
-
-    const enemy =
-      newBoard.find(p =>
-        p.row === option.move.enemy.row &&
-        p.col === option.move.enemy.col &&
-        p.color === option.move.enemy.color
+    if (option.capture && option.move.enemy) {
+      const enemy = newBoard.find(
+        (p) =>
+          p.row === option.move.enemy.row &&
+          p.col === option.move.enemy.col &&
+          p.color === option.move.enemy.color,
       );
 
+      if (enemy) {
+        const index = newBoard.indexOf(enemy);
 
-    if (enemy) {
-
-      const index =
-        newBoard.indexOf(enemy);
-
-      newBoard.splice(index, 1);
+        newBoard.splice(index, 1);
+      }
     }
+
+    // ----------------------------
+    // РУХ
+    // ----------------------------
+
+    piece.row = option.move.row;
+
+    piece.col = option.move.col;
+
+    // ----------------------------
+    // ДАМКА
+    // ----------------------------
+
+    if (piece.color === "black" && piece.row === SIZE - 1) {
+      piece.king = true;
+    }
+
+    if (piece.color === "white" && piece.row === 0) {
+      piece.king = true;
+    }
+
+    return newBoard;
   }
-
-
-  // ----------------------------
-  // РУХ
-  // ----------------------------
-
-  piece.row =
-    option.move.row;
-
-  piece.col =
-    option.move.col;
-
-
-  // ----------------------------
-  // ДАМКА
-  // ----------------------------
-
-  if (
-    piece.color === "black" &&
-    piece.row === SIZE - 1
-  ) {
-
-    piece.king = true;
-
-  }
-
-
-  if (
-    piece.color === "white" &&
-    piece.row === 0
-  ) {
-
-    piece.king = true;
-
-  }
-
-
-  return newBoard;
-}
-
 
   // ============================
   // ПРОДОВЖЕННЯ ВЗЯТТЯ
   // ============================
 
-  if (
-    aiCapturing &&
-    selectedPiece
-  ) {
+  if (aiCapturing && selectedPiece) {
+    const captures = getCaptures(selectedPiece);
 
-    const captures =
-      getCaptures(selectedPiece);
-
-    captures.forEach(move => {
-
+    captures.forEach((move) => {
       possibleMoves.push({
         piece: selectedPiece,
         move: move,
-        capture: true
+        capture: true,
       });
     });
   }
-
 
   // ============================
   // НОВИЙ ХІД AI
   // ============================
 
-  if (
-    !aiCapturing &&
-    !selectedPiece
-  ) {
-
-    const mustCapture =
-      hasAnyCapture("black");
-
+  if (!aiCapturing && !selectedPiece) {
+    const mustCapture = hasAnyCapture("black");
 
     // ============================
     // ОБОВ'ЯЗКОВЕ ВЗЯТТЯ
     // ============================
 
     if (mustCapture) {
-
-      pieces.forEach(piece => {
-
-        if (
-          piece.color !== "black"
-        ) {
+      pieces.forEach((piece) => {
+        if (piece.color !== "black") {
           return;
         }
 
+        const captures = getCaptures(piece);
 
-        const captures =
-          getCaptures(piece);
-
-
-        captures.forEach(move => {
-
+        captures.forEach((move) => {
           possibleMoves.push({
             piece: piece,
             move: move,
-            capture: true
+            capture: true,
           });
         });
       });
-
-
     } else {
-
       // ============================
       // ЗВИЧАЙНІ ХОДИ
       // ============================
 
-      pieces.forEach(piece => {
-
-        if (
-          piece.color !== "black"
-        ) {
+      pieces.forEach((piece) => {
+        if (piece.color !== "black") {
           return;
         }
-
 
         // ============================
         // ДАМКА
         // ============================
 
         if (piece.king) {
-
           const directions = [
             [-1, -1],
             [-1, 1],
             [1, -1],
-            [1, 1]
+            [1, 1],
           ];
 
+          directions.forEach(([dr, dc]) => {
+            let row = piece.row + dr;
 
-          directions.forEach(
-            ([dr, dc]) => {
+            let col = piece.col + dc;
 
-              let row =
-                piece.row + dr;
-
-              let col =
-                piece.col + dc;
-
-
-              while (
-                isInside(row, col)
-              ) {
-
-                if (getPiece(row, col)) {
-                  break;
-                }
-
-
-                possibleMoves.push({
-                  piece: piece,
-                  move: {
-                    row: row,
-                    col: col
-                  },
-                  capture: false
-                });
-
-
-                row += dr;
-                col += dc;
+            while (isInside(row, col)) {
+              if (getPiece(row, col)) {
+                break;
               }
+
+              possibleMoves.push({
+                piece: piece,
+                move: {
+                  row: row,
+                  col: col,
+                },
+                capture: false,
+              });
+
+              row += dr;
+              col += dc;
             }
-          );
-
-
+          });
         } else {
-
           // ============================
           // ЗВИЧАЙНА ШАШКА
           // ============================
@@ -2601,53 +2235,37 @@ function simulateMove(
 
           const moves = [
             [direction, -1],
-            [direction, 1]
+            [direction, 1],
           ];
 
+          moves.forEach(([dr, dc]) => {
+            const row = piece.row + dr;
 
-          moves.forEach(
-            ([dr, dc]) => {
+            const col = piece.col + dc;
 
-              const row =
-                piece.row + dr;
-
-              const col =
-                piece.col + dc;
-
-
-              if (
-                isInside(row, col) &&
-                !getPiece(row, col)
-              ) {
-
-                possibleMoves.push({
-                  piece: piece,
-                  move: {
-                    row: row,
-                    col: col
-                  },
-                  capture: false
-                });
-              }
+            if (isInside(row, col) && !getPiece(row, col)) {
+              possibleMoves.push({
+                piece: piece,
+                move: {
+                  row: row,
+                  col: col,
+                },
+                capture: false,
+              });
             }
-          );
+          });
         }
       });
     }
   }
 
-
   // ============================
   // НЕМАЄ ХОДІВ
   // ============================
 
-  if (
-    possibleMoves.length === 0
-  ) {
-
+  if (possibleMoves.length === 0) {
     // AI закінчив серію взяттів
     if (aiCapturing) {
-
       aiCapturing = false;
       selectedPiece = null;
 
@@ -2662,12 +2280,10 @@ function simulateMove(
       return;
     }
 
-
     checkWinner();
 
     return;
   }
-
 
   // ============================
   // ВИБИРАЄМО ВИПАДКОВИЙ ХІД
@@ -2676,57 +2292,33 @@ function simulateMove(
   let choice;
 
   if (aiDifficulty === "easy") {
-
     choice = getEasyMove(possibleMoves);
-
   } else if (aiDifficulty === "medium") {
-
     choice = getMediumMove(possibleMoves);
-
   } else if (aiDifficulty === "hard") {
-
     choice = getHardMove(possibleMoves);
   }
 
+  selectedPiece = choice.piece;
 
-  selectedPiece =
-    choice.piece;
-
-
-  movePiece(
-    choice.move.row,
-    choice.move.col
-  );
+  movePiece(choice.move.row, choice.move.col);
 }
-
 
 // ============================
 // ОТРИМАТИ ШАШКУ
 // ============================
 
 function getPiece(row, col) {
-
-  return pieces.find(piece =>
-    piece.row === row &&
-    piece.col === col
-  );
+  return pieces.find((piece) => piece.row === row && piece.col === col);
 }
-
 
 // ============================
 // ПЕРЕВІРКА КООРДИНАТ
 // ============================
 
 function isInside(row, col) {
-
-  return (
-    row >= 0 &&
-    row < SIZE &&
-    col >= 0 &&
-    col < SIZE
-  );
+  return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
 }
-
 
 // ============================
 // ЗАПУСК
