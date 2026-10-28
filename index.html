@@ -1,77 +1,255 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="uk">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkers</title>
-  <link rel="stylesheet" href="style.css">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkers</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<body>
+  <body>
+    <header class="site-header">
+      <div class="header-logo">♟ Shashky 3D</div>
 
-  <div class="menu" id="menu">
-    <h1>CHECKERS</h1>
+      <button id="headerMenuBtn" type="button" aria-label="Відкрити меню">
+        ☰ Меню
+      </button>
+    </header>
+    <div class="menu" id="menu">
+      <h1>CHECKERS</h1>
 
-    <button id="aiBtn">🤖 Грати з AI</button>
-    <button id="twoPlayersBtn">👥 Грати удвох</button>
-    <button id="onlineBtn">🌐 Грати онлайн</button>
-  </div>
-
-  <div class="online-panel" id="onlinePanel" style="display:none">
-    <h2>Онлайн-гра</h2>
-    <p>Створи кімнату або введи код друга.</p>
-    <button id="createRoomBtn">Створити кімнату</button>
-    <div class="room-join">
-      <input id="roomCodeInput" maxlength="6" placeholder="Код кімнати" autocomplete="off" />
-      <button id="joinRoomBtn">Приєднатися</button>
+      <button id="aiBtn">🤖 Грати з AI</button>
+      <button id="twoPlayersBtn">👥 Грати удвох</button>
+      <button id="onlineBtn">🌐 Грати онлайн</button>
+      <button id="supportBtn">❤️ Допомогти проєкту</button>
     </div>
-    <p id="onlineStatus" role="status">Підключення до сервера...</p>
-    <button id="onlineBackBtn">← Назад</button>
-  </div>
 
-  <div class="game" id="game">
+    <div class="support-panel" id="supportPanel" style="display: none">
+      <h2>❤️ Допомогти проєкту</h2>
 
-    <div class="top-panel">
-      <div class="player">
-        <span>Білі</span>
-        <span id="whiteTime">30</span>
+      <p>
+        Якщо тобі подобається гра, ти можеш добровільно підтримати її розвиток.
+        Дякую за допомогу!
+      </p>
+
+      <label for="cardNumber">Номер картки(MonoBank):</label>
+      <div class="support-card">
+        <span id="cardNumber">4874 0700 5747 1268</span>
+        <button id="copyCardBtn" type="button">Копіювати</button>
       </div>
 
-      <div class="timer-bar">
-        <div id="timerProgress"></div>
+      <p id="copyStatus" role="status"></p>
+      <button id="supportBackBtn" type="button">← Назад</button>
+    </div>
+
+    <div class="info-panel" id="aboutPanel" style="display: none">
+      <h2>About Shashky 3D</h2>
+
+      <p>
+        Shashky 3D is an online checkers game where you can play against AI,
+        challenge a friend, or play online.
+      </p>
+
+      <p>
+        The project is being developed to make checkers accessible and enjoyable
+        for everyone.
+      </p>
+
+      <button id="aboutBackBtn" type="button">← Back</button>
+    </div>
+
+    <div class="info-panel" id="termsPanel" style="display: none">
+      <h2>Terms of Service</h2>
+
+      <p><strong>Last updated:</strong> October 28, 2026</p>
+
+      <h3>1. Acceptance of Terms</h3>
+      <p>
+        By using Shashky 3D, you agree to these Terms of Service. If you do not
+        agree, please do not use the game.
+      </p>
+
+      <h3>2. Rules of Conduct</h3>
+      <p>
+        Players are expected to treat others respectfully and use the online
+        features responsibly.
+      </p>
+
+      <h3>3. Gameplay</h3>
+      <p>
+        Shashky 3D is provided for entertainment. Online matches may be affected
+        by connection problems or server availability.
+      </p>
+
+      <h3>4. Availability</h3>
+      <p>
+        Features may change, become temporarily unavailable, or be updated as
+        the project develops.
+      </p>
+
+      <h3>5. Contact</h3>
+      <p>
+        For questions about these terms, please use the project's available
+        contact channel.
+      </p>
+
+      <button id="termsBackBtn" type="button">← Back</button>
+    </div>
+
+    <div class="info-panel" id="privacyPanel" style="display: none">
+      <h2>Privacy Policy</h2>
+
+      <p><strong>Last updated:</strong> October 28, 2026</p>
+
+      <h3>1. Introduction</h3>
+      <p>
+        This Privacy Policy explains how Shashky 3D may process information when
+        you use the game.
+      </p>
+
+      <h3>2. Information We Process</h3>
+      <p>
+        Depending on the features you use, information may be transmitted to the
+        game server to create rooms, join matches, and provide online gameplay.
+        The exact information processed must be confirmed by reviewing the
+        client and server code.
+      </p>
+
+      <h3>3. How Information Is Used</h3>
+      <p>
+        Information may be used to operate online matches, connect players,
+        maintain game functionality, and troubleshoot technical issues, as
+        applicable to the implemented features.
+      </p>
+
+      <h3>4. Storage and Retention</h3>
+      <p>
+        Storage locations and retention periods depend on the information
+        processed by the game and its hosting services. These details must be
+        confirmed before publication.
+      </p>
+
+      <h3>5. Third-Party Services</h3>
+      <p>
+        The game may rely on hosting or networking providers. Applicable
+        providers and their data practices should be identified before this
+        policy is finalized.
+      </p>
+
+      <h3>6. Contact</h3>
+      <p>
+        For privacy questions or requests, contact the project through its
+        published contact channel.
+      </p>
+
+      <button id="privacyBackBtn" type="button">← Back</button>
+    </div>
+
+    <div class="info-panel" id="contactPanel" style="display: none">
+      <h2>Contact Us</h2>
+
+      <p>
+        Have a question, found a bug, or want to share feedback about Shashky
+        3D? Feel free to contact us by email.
+      </p>
+
+     <a
+      id="contactEmailLink"
+      class="contact-email-btn"
+      href="https://mail.google.com/mail/?view=cm&fs=1&to=bagrunivskiystepan@gmail.com&su=Shashky%203D%20Support"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      ✉ Send Email
+    </a>
+
+      <p class="contact-note">
+        Gmail will open in a new tab so you can write your message
+      </p>
+
+      <button id="contactBackBtn" type="button">← Back</button>
+    </div>
+
+    <div class="online-panel" id="onlinePanel" style="display: none">
+      <h2>Онлайн-гра</h2>
+      <p>Створи кімнату або введи код друга.</p>
+      <button id="createRoomBtn">Створити кімнату</button>
+      <div class="room-join">
+        <input
+          id="roomCodeInput"
+          maxlength="6"
+          placeholder="Код кімнати"
+          autocomplete="off"
+        />
+        <button id="joinRoomBtn">Приєднатися</button>
+      </div>
+      <p id="onlineStatus" role="status">Підключення до сервера...</p>
+      <button id="onlineBackBtn">← Назад</button>
+    </div>
+
+    <div class="game" id="game">
+      <div class="top-panel">
+        <div class="player">
+          <span>Білі</span>
+          <span id="whiteTime">30</span>
+        </div>
+
+        <div class="timer-bar">
+          <div id="timerProgress"></div>
+        </div>
+
+        <div class="player">
+          <span>Чорні</span>
+          <span id="blackTime">30</span>
+        </div>
       </div>
 
-      <div class="player">
-        <span>Чорні</span>
-        <span id="blackTime">30</span>
+      <h1>CHECKERS</h1>
+
+      <div id="board" aria-label="3D дошка для шашок">
+        <div id="board3d"></div>
+        <div id="boardGrid"></div>
+
+        <div id="mobileCameraControls">
+          <button
+            id="cameraLeftBtn"
+            type="button"
+            aria-label="Повернути камеру ліворуч"
+          >
+            ←
+          </button>
+          <button
+            id="cameraRightBtn"
+            type="button"
+            aria-label="Повернути камеру праворуч"
+          >
+            →
+          </button>
+        </div>
       </div>
+
+      <div class="turn">Хід: <span id="turn">Білі</span></div>
+
+      <button id="newGameBtn">Нова гра</button>
+      <button id="menuBtn">Меню</button>
     </div>
 
-    <h1>CHECKERS</h1>
+    <footer class="site-footer">
+      <nav class="footer-links" aria-label="Інформація про гру">
+        <button type="button" data-footer-page="about">About Us</button>
+        <button type="button" data-footer-page="terms">Terms of Service</button>
+        <button type="button" data-footer-page="privacy">Privacy Policy</button>
+        <button type="button" data-footer-page="contact">Contact Us</button>
+        <button type="button" data-footer-page="support">
+          Support the Project
+        </button>
+      </nav>
 
-  <div id="board" aria-label="3D дошка для шашок">
-    <div id="board3d"></div>
-    <div id="boardGrid"></div>
-
-    <div id="mobileCameraControls">
-      <button id="cameraLeftBtn" type="button" aria-label="Повернути камеру ліворуч">←</button>
-      <button id="cameraRightBtn" type="button" aria-label="Повернути камеру праворуч">→</button>
-    </div>
-  </div>
-
-    <div class="turn">
-      Хід: <span id="turn">Білі</span>
-    </div>
-
-    <button id="newGameBtn">Нова гра</button>
-    <button id="menuBtn">Меню</button>
-
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-  <script src="online-config.js"></script>
-  <script src="renderer.js"></script>
-
-</body>
+      <div class="footer-copyright">© 2026 Shashky 3D</div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="online-config.js"></script>
+    <script src="renderer.js"></script>
+  </body>
 </html>

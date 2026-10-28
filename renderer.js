@@ -32,6 +32,8 @@ const turnText = document.getElementById("turn");
 const menu = document.getElementById("menu");
 const game = document.getElementById("game");
 
+const headerMenuBtn = document.getElementById("headerMenuBtn");
+
 const aiBtn = document.getElementById("aiBtn");
 const twoPlayersBtn = document.getElementById("twoPlayersBtn");
 
@@ -44,6 +46,36 @@ const joinRoomBtn = document.getElementById("joinRoomBtn");
 const roomCodeInput = document.getElementById("roomCodeInput");
 const onlineStatus = document.getElementById("onlineStatus");
 const onlineBackBtn = document.getElementById("onlineBackBtn");
+const supportBtn = document.getElementById("supportBtn");
+const supportPanel = document.getElementById("supportPanel");
+const supportBackBtn = document.getElementById("supportBackBtn");
+const copyCardBtn = document.getElementById("copyCardBtn");
+const cardNumber = document.getElementById("cardNumber");
+const copyStatus = document.getElementById("copyStatus");
+
+const aboutPanel = document.getElementById("aboutPanel");
+const aboutBackBtn = document.getElementById("aboutBackBtn");
+const footerButtons = document.querySelectorAll("[data-footer-page]");
+const termsPanel = document.getElementById("termsPanel");
+const termsBackBtn = document.getElementById("termsBackBtn");
+const privacyPanel = document.getElementById("privacyPanel");
+const privacyBackBtn = document.getElementById("privacyBackBtn");
+const contactPanel = document.getElementById("contactPanel");
+const contactBackBtn = document.getElementById("contactBackBtn");
+
+const footerPanels = {
+  about: document.getElementById("aboutPanel"),
+  terms: document.getElementById("termsPanel"),
+  privacy: document.getElementById("privacyPanel"),
+  contact: document.getElementById("contactPanel"),
+  support: document.getElementById("supportPanel")
+};
+
+contactBackBtn?.addEventListener("click", () => {
+  contactPanel.style.display = "none";
+  menu.style.display = "block";
+});
+
 
 // ============================
 // ONLINE CONNECTION / LOBBY
@@ -166,6 +198,90 @@ onlineBackBtn.addEventListener("click", () => {
   menu.style.display = "block";
 });
 
+supportBtn.addEventListener("click", () => {
+  menu.style.display = "none";
+  onlinePanel.style.display = "none";
+  supportPanel.style.display = "block";
+});
+
+supportBackBtn.addEventListener("click", () => {
+  supportPanel.style.display = "none";
+  menu.style.display = "block";
+});
+
+footerButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const page = button.dataset.footerPage;
+
+    if (page === "about") {
+      menu.style.display = "none";
+      onlinePanel.style.display = "none";
+      supportPanel.style.display = "none";
+      aboutPanel.style.display = "block";
+    }
+
+    if (page === "support") {
+      menu.style.display = "none";
+      onlinePanel.style.display = "none";
+      aboutPanel.style.display = "none";
+      supportPanel.style.display = "block";
+    }
+
+    if (page === "terms") {
+      menu.style.display = "none";
+      onlinePanel.style.display = "none";
+      supportPanel.style.display = "none";
+      aboutPanel.style.display = "none";
+      termsPanel.style.display = "block";
+    }
+
+    if (page === "privacy") {
+      menu.style.display = "none";
+      onlinePanel.style.display = "none";
+      supportPanel.style.display = "none";
+      aboutPanel.style.display = "none";
+      termsPanel.style.display = "none";
+      privacyPanel.style.display = "block";
+    }
+
+    if (page === "contact") {
+      menu.style.display = "none";
+      onlinePanel.style.display = "none";
+      supportPanel.style.display = "none";
+      aboutPanel.style.display = "none";
+      termsPanel.style.display = "none";
+      privacyPanel.style.display = "none";
+      contactPanel.style.display = "block";
+    }
+  });
+});
+
+privacyBackBtn.addEventListener("click", () => {
+  privacyPanel.style.display = "none";
+  menu.style.display = "block";
+});
+
+termsBackBtn.addEventListener("click", () => {
+  termsPanel.style.display = "none";
+  menu.style.display = "block";
+});
+
+aboutBackBtn.addEventListener("click", () => {
+  aboutPanel.style.display = "none";
+  menu.style.display = "block";
+});
+
+copyCardBtn.addEventListener("click", async () => {
+  const number = cardNumber.textContent.trim().replace(/\s/g, "");
+
+  try {
+    await navigator.clipboard.writeText(number);
+    copyStatus.textContent = "Номер картки скопійовано!";
+  } catch (error) {
+    copyStatus.textContent = "Не вдалося скопіювати. Скопіюй номер вручну.";
+  }
+});
+
 createRoomBtn.addEventListener("click", () => {
   connectOnlineSocket();
   if (!onlineSocket || !onlineSocket.connected) {
@@ -214,6 +330,15 @@ menuBtn.addEventListener("click", () => {
   onlineRoomCode = null;
 
   game.style.display = "none";
+  menu.style.display = "block";
+});
+
+headerMenuBtn.addEventListener("click", () => {
+  menuBtn.click();
+
+  aboutPanel.style.display = "none";
+  onlinePanel.style.display = "none";
+  supportPanel.style.display = "none";
   menu.style.display = "block";
 });
 
@@ -534,7 +659,7 @@ function init3DScene() {
     if (event.button === 1) event.preventDefault();
   });
 
-// Mobile: use board touches only for selecting and moving pieces.
+  // Mobile: use board touches only for selecting and moving pieces.
   // Camera rotation is handled by the left/right buttons.
   board.addEventListener(
     "touchstart",
