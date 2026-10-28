@@ -68,14 +68,13 @@ const footerPanels = {
   terms: document.getElementById("termsPanel"),
   privacy: document.getElementById("privacyPanel"),
   contact: document.getElementById("contactPanel"),
-  support: document.getElementById("supportPanel")
+  support: document.getElementById("supportPanel"),
 };
 
 contactBackBtn?.addEventListener("click", () => {
   contactPanel.style.display = "none";
   menu.style.display = "block";
 });
-
 
 // ============================
 // ONLINE CONNECTION / LOBBY
@@ -474,11 +473,17 @@ let moveMarkers3D = [];
 let selectedMarker3D = null;
 let cameraAngle = Math.PI / 1;
 let cameraDistance = 15;
+let targetCameraDistance = 15;
 let cameraPitch = 1;
 let cameraFocusAnimation = null;
+let cameraZoomAnimation = null;
 let cameraFocusTarget = null;
 let dragStart = null;
 let dragMoved = false;
+
+const MIN_CAMERA_DISTANCE = 9.5;
+const MAX_CAMERA_DISTANCE = 16;
+const CAMERA_ZOOM_STEP = 1.2;
 
 function init3DScene() {
   if (scene3D) return;
@@ -712,6 +717,28 @@ function init3DScene() {
     update3DCamera();
   });
 
+  const zoomInBtn = document.getElementById("zoomInBtn");
+  const zoomOutBtn = document.getElementById("zoomOutBtn");
+
+  function changeCameraZoom(amount) {
+    if (!window.matchMedia("(max-width: 760px)").matches) return;
+
+    targetCameraDistance = Math.max(
+      MIN_CAMERA_DISTANCE,
+      Math.min(MAX_CAMERA_DISTANCE, targetCameraDistance + amount),
+    );
+
+    startCameraZoomAnimation();
+  }
+
+  zoomInBtn?.addEventListener("click", () => {
+    changeCameraZoom(-CAMERA_ZOOM_STEP);
+  });
+
+  zoomOutBtn?.addEventListener("click", () => {
+    changeCameraZoom(CAMERA_ZOOM_STEP);
+  });
+
   // Select board squares. A camera gesture must not trigger a move.
   renderer3D.domElement.addEventListener("click", (event) => {
     console.log("BOARD CLICK", {
@@ -761,12 +788,15 @@ function init3DScene() {
     (event) => {
       event.preventDefault();
 
-      cameraDistance = Math.max(
-        9.5,
-        Math.min(16, cameraDistance + event.deltaY * 0.008),
+      targetCameraDistance = Math.max(
+        MIN_CAMERA_DISTANCE,
+        Math.min(
+          MAX_CAMERA_DISTANCE,
+          targetCameraDistance + event.deltaY * 0.008,
+        ),
       );
 
-      update3DCamera();
+      startCameraZoomAnimation();
     },
     { passive: false },
   );
@@ -826,14 +856,46 @@ function focusCameraOnTurn(player, immediate = false) {
 
 function update3DCamera() {
   if (!camera3D) return;
+
   camera3D.position.set(
     Math.sin(cameraAngle) * cameraDistance * Math.cos(cameraPitch),
     cameraDistance * Math.sin(cameraPitch),
     Math.cos(cameraAngle) * cameraDistance * Math.cos(cameraPitch),
   );
+
   camera3D.lookAt(0, 0.1, 0);
-  // Render immediately after camera changes; do not wait for a move or new game.
-  if (renderer3D && scene3D) renderer3D.render(scene3D, camera3D);
+
+  if (renderer3D && scene3D) {
+    renderer3D.render(scene3D, camera3D);
+  }
+}
+
+function animateCameraZoom() {
+  if (!camera3D || !renderer3D || !scene3D) {
+    cameraZoomAnimation = null;
+    return;
+  }
+
+  const difference = targetCameraDistance - cameraDistance;
+
+  if (Math.abs(difference) < 0.01) {
+    cameraDistance = targetCameraDistance;
+    cameraZoomAnimation = null;
+    update3DCamera();
+    return;
+  }
+
+  cameraDistance += difference * 0.18;
+
+  update3DCamera();
+
+  cameraZoomAnimation = requestAnimationFrame(animateCameraZoom);
+}
+
+function startCameraZoomAnimation() {
+  if (cameraZoomAnimation !== null) return;
+
+  cameraZoomAnimation = requestAnimationFrame(animateCameraZoom);
 }
 
 function resize3D() {

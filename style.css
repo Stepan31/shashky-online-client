@@ -5,20 +5,16 @@
 body {
   margin: 0;
   min-height: 100vh;
-
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-
   background: #181818;
   font-family: Arial, sans-serif;
   color: white;
 }
 
-/* =========================
-   MENU
-========================= */
+/* MENU */
 
 .menu {
   text-align: center;
@@ -33,15 +29,11 @@ button {
   border: none;
   padding: 14px 28px;
   margin: 8px;
-
   border-radius: 10px;
-
   background: #333;
   color: white;
-
   font-size: 18px;
   cursor: pointer;
-
   transition: 0.2s;
 }
 
@@ -56,13 +48,15 @@ button:hover {
   margin: 15px auto;
 }
 
-/* =========================
-   GAME
-========================= */
+/* GAME */
 
 .game {
   display: none;
+  width: 100%;
+  max-width: 100%;
   text-align: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 h1 {
@@ -70,14 +64,11 @@ h1 {
   letter-spacing: 8px;
 }
 
-/* =========================
-   TIMER
-========================= */
+/* TIMER */
 
 .top-panel {
   width: 720px;
   margin: 0 auto 15px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -85,11 +76,9 @@ h1 {
 
 .player {
   width: 100px;
-
   display: flex;
   flex-direction: column;
   gap: 5px;
-
   font-size: 18px;
 }
 
@@ -101,25 +90,19 @@ h1 {
 .timer-bar {
   width: 450px;
   height: 10px;
-
   background: #333;
   border-radius: 10px;
-
   overflow: hidden;
 }
 
 #timerProgress {
   width: 100%;
   height: 100%;
-
   background: #4caf50;
-
   transition: width 1s linear;
 }
 
-/* =========================
-   THREE.JS BOARD
-========================= */
+/* THREE.JS BOARD */
 
 #board {
   position: relative;
@@ -129,8 +112,11 @@ h1 {
   border: 1px solid rgba(218, 174, 105, 0.7);
   border-radius: 12px;
   background: #171b24;
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.55), 0 0 0 5px rgba(84, 56, 37, 0.65);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.55),
+    0 0 0 5px rgba(84, 56, 37, 0.65);
   isolation: isolate;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 #board3d,
@@ -141,8 +127,15 @@ h1 {
   height: 100%;
 }
 
-#board3d { z-index: 1; }
-#board3d canvas { display: block; width: 100%; height: 100%; }
+#board3d {
+  z-index: 1;
+}
+
+#board3d canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 
 #boardGrid {
   z-index: 2;
@@ -179,15 +172,13 @@ h1 {
   font-size: 17px;
 }
 
-@media (max-width: 760px) {
-  .top-panel { width: min(94vw, 720px); }
-  #board { width: min(94vw, 720px); height: min(94vw, 720px); }
-  .timer-bar { width: 36vw; }
+#board,
+#board3d,
+#board3d canvas {
+  touch-action: none;
 }
 
-/* =========================
-   TURN
-========================= */
+/* TURN */
 
 .turn {
   margin-top: 15px;
@@ -195,29 +186,71 @@ h1 {
   font-size: 18px;
 }
 
-
 /* ONLINE LOBBY */
+
 .online-panel {
-  width: min(420px, calc(100vw - 32px)); padding: 24px; text-align: center;
-  border: 1px solid rgba(218, 174, 105, 0.55); border-radius: 16px;
-  background: #222630; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+  width: min(420px, calc(100vw - 32px));
+  padding: 24px;
+  text-align: center;
+  border: 1px solid rgba(218, 174, 105, 0.55);
+  border-radius: 16px;
+  background: #222630;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
 }
-.online-panel h2 { margin-top: 0; }
-.online-panel p { color: #d7dbe4; }
-.room-join { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
-.room-join input { width: 145px; padding: 13px 12px; border-radius: 9px; border: 1px solid #555d6e; background: #151820; color: white; font-size: 18px; text-transform: uppercase; text-align: center; }
-#onlineStatus { min-height: 24px; overflow-wrap: anywhere; }
-#board,
-#board3d,
-#board3d canvas {
-  touch-action: none;
+
+.online-panel h2 {
+  margin-top: 0;
 }
-/* Mobile camera rotation controls */
+
+.online-panel p {
+  color: #d7dbe4;
+}
+
+.room-join {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.room-join input {
+  width: 145px;
+  padding: 13px 12px;
+  border-radius: 9px;
+  border: 1px solid #555d6e;
+  background: #151820;
+  color: white;
+  font-size: 18px;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+#onlineStatus {
+  min-height: 24px;
+  overflow-wrap: anywhere;
+}
+
+/* MOBILE CAMERA CONTROLS */
+
 #mobileCameraControls {
   display: none;
 }
 
 @media (max-width: 760px) {
+  .top-panel {
+    width: min(94vw, 720px);
+  }
+
+  #board {
+    width: min(94vw, 720px);
+    height: min(94vw, 720px);
+  }
+
+  .timer-bar {
+    width: 36vw;
+  }
+
   #mobileCameraControls {
     position: absolute;
     z-index: 5;
@@ -230,13 +263,15 @@ h1 {
   }
 
   #mobileCameraControls button {
-    width: 20px;
-    height: 20px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    margin: 0;
     border: 1px solid rgba(218, 174, 105, 0.8);
     border-radius: 12px;
     background: rgba(23, 27, 36, 0.82);
     color: white;
-    font-size: 30px;
+    font-size: 24px;
     cursor: pointer;
     pointer-events: auto;
     touch-action: manipulation;
@@ -245,10 +280,12 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
 }
 
-/* Project support panel */
+/* SUPPORT PANEL */
+
 .support-panel {
   width: min(420px, calc(100vw - 32px));
   box-sizing: border-box;
@@ -290,6 +327,7 @@ h1 {
   cursor: pointer;
 }
 
+/* FOOTER */
 
 .site-footer {
   position: fixed;
@@ -344,22 +382,7 @@ h1 {
   text-align: center;
 }
 
-@media (max-width: 600px) {
-  .site-footer {
-    padding: 10px 12px;
-    gap: 7px;
-  }
-
-  .footer-links {
-    gap: 8px 16px;
-  }
-
-  .footer-links button {
-    font-size: 11px;
-  }
-}
-
-
+/* HEADER */
 
 .site-header {
   position: fixed;
@@ -402,23 +425,8 @@ h1 {
   background: rgba(255, 255, 255, 0.16);
 }
 
-@media (max-width: 600px) {
-  .site-header {
-    height: 50px;
-    padding: 0 12px;
-  }
+/* INFORMATION PAGES */
 
-  .header-logo {
-    font-size: 16px;
-  }
-
-  #headerMenuBtn {
-    padding: 7px 12px;
-    font-size: 13px;
-  }
-}
-
-/* Information pages */
 .info-panel {
   width: min(420px, calc(100vw - 32px));
   box-sizing: border-box;
@@ -447,6 +455,7 @@ h1 {
   cursor: pointer;
 }
 
+/* CONTACT EMAIL */
 
 .contact-email-btn {
   display: inline-block;
@@ -473,4 +482,74 @@ h1 {
 .contact-note {
   font-size: 0.9rem;
   opacity: 0.75;
+}
+
+/* RESPONSIVE LAYOUT */
+
+@media (max-width: 760px) {
+  body {
+    justify-content: flex-start;
+    padding-top: 65px;
+  }
+
+  .site-footer {
+    position: static;
+    margin-top: 20px;
+    padding: 10px 12px;
+    gap: 7px;
+    z-index: auto;
+  }
+
+  .footer-links {
+    gap: 8px 16px;
+  }
+
+  .footer-links button {
+    font-size: 11px;
+  }
+
+    .game {
+    width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .top-panel {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #board {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .site-header {
+    height: 50px;
+    padding: 0 12px;
+  }
+
+  .header-logo {
+    font-size: 16px;
+  }
+
+  #headerMenuBtn {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+
+  .site-footer {
+    padding: 10px 12px;
+  }
+
+  .info-panel {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .menu h1 {
+    font-size: 36px;
+  }
 }
