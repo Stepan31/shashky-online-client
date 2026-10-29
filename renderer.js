@@ -52,6 +52,8 @@ const supportBackBtn = document.getElementById("supportBackBtn");
 const copyCardBtn = document.getElementById("copyCardBtn");
 const cardNumber = document.getElementById("cardNumber");
 const copyStatus = document.getElementById("copyStatus");
+const copyIbanBtn = document.getElementById("copyIbanBtn");
+const ibanNumber = document.getElementById("ibanNumber");
 
 const aboutPanel = document.getElementById("aboutPanel");
 const aboutBackBtn = document.getElementById("aboutBackBtn");
@@ -278,6 +280,22 @@ copyCardBtn.addEventListener("click", async () => {
     copyStatus.textContent = "Номер картки скопійовано!";
   } catch (error) {
     copyStatus.textContent = "Не вдалося скопіювати. Скопіюй номер вручну.";
+  }
+});
+copyIbanBtn?.addEventListener("click", async () => {
+  const iban = ibanNumber?.textContent.trim();
+
+  if (!iban || iban === "UA653220010000026208371069618") {
+    copyStatus.textContent = "Спочатку додай IBAN.";
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(iban);
+    copyStatus.textContent = "IBAN скопійовано!";
+  } catch (error) {
+    copyStatus.textContent =
+      "Не вдалося скопіювати. Скопіюй IBAN вручну.";
   }
 });
 
