@@ -7,7 +7,8 @@ let currentPlayer = "white";
 let gameMode = null;
 let gameStarted = false;
 
-let timer = 30;
+const TURN_TIME = 60;
+let timer = TURN_TIME;
 let timerInterval = null;
 
 let aiCapturing = false;
@@ -159,6 +160,25 @@ function serializeOnlineState() {
 
 function applyOnlineState(state, fromOpponent) {
   if (!state || !Array.isArray(state.pieces)) return;
+  // Звук лише тоді, коли дошка справді змінилася
+  if (fromOpponent) {
+    const boardChanged =
+      state.pieces.length !== pieces.length ||
+      state.pieces.some(
+        (remotePiece) =>
+          !pieces.some(
+            (localPiece) =>
+              localPiece.row === remotePiece.row &&
+              localPiece.col === remotePiece.col &&
+              localPiece.color === remotePiece.color &&
+              !!localPiece.king === !!remotePiece.king,
+          ),
+      );
+
+    if (boardChanged) {
+      playMoveSound(state.pieces.length < pieces.length);
+    }
+  }
   applyingRemoteState = true;
   pieces = state.pieces.map((piece) => ({
     row: piece.row,
@@ -546,7 +566,7 @@ function init3DScene() {
   camera3D = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
 
   cameraAngle = 0.24;
-  cameraPitch = 0.76;
+  cameraPitch = 0.84;
 
   update3DCamera();
 
@@ -860,7 +880,7 @@ function focusCameraOnTurn(player, immediate = false) {
   // Keep the camera slightly off-axis and above the board so the pieces remain visibly 3D.
   cameraFocusTarget = {
   angle: player === "white" ? 0 : Math.PI,
-    pitch: 0.76,
+    pitch: 0.84,
   };
 
   if (cameraFocusAnimation) {
@@ -1368,6 +1388,89 @@ function isPossibleMove(row, col) {
 }
 
 // ============================
+// ЗВУК ХОДУ ШАШКИ
+// ============================
+let audioContext = null;
+
+function playMoveSound(isCapture = false) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContext) return;
+
+    if (!audioContext) {
+      audioContext = new AudioContext();
+    }
+
+    if (audioContext.state === "suspended") {
+      audioContext.resume();
+    }
+
+    const now = audioContext.currentTime;
+    const duration = isCapture ? 0.13 : 0.09;
+
+    // Короткий шум — імітація контакту з деревом
+    const bufferSize = Math.floor(audioContext.sampleRate * 0.05);
+    const noiseBuffer = audioContext.createBuffer(
+      1,
+      bufferSize,
+      audioContext.sampleRate,
+    );
+
+    const noiseData = noiseBuffer.getChannelData(0);
+
+    for (let i = 0; i < bufferSize; i++) {
+      noiseData[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+    }
+
+    const noise = audioContext.createBufferSource();
+    const noiseFilter = audioContext.createBiquadFilter();
+    const noiseGain = audioContext.createGain();
+
+    noise.buffer = noiseBuffer;
+    noiseFilter.type = "bandpass";
+    noiseFilter.frequency.value = 1000;
+    noiseFilter.Q.value = 0.8;
+
+    noiseGain.gain.setValueAtTime(isCapture ? 0.055 : 0.04, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioContext.destination);
+
+    noise.start(now);
+    noise.stop(now + 0.05);
+
+    // Низький резонанс — дерев'яний стук
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+
+    oscillator.type = "triangle";
+
+    const frequency = isCapture ? 145 : 190;
+
+    oscillator.frequency.setValueAtTime(frequency, now);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      frequency * 0.7,
+      now + duration,
+    );
+
+    gain.gain.setValueAtTime(isCapture ? 0.11 : 0.09, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+  } catch (error) {
+    console.warn("Не вдалося відтворити звук:", error);
+  }
+}
+
+
+// ============================
 // ХІД
 // ============================
 
@@ -1390,6 +1493,9 @@ function movePiece(row, col) {
 
   selectedPiece.row = row;
   selectedPiece.col = col;
+
+  // Звук кожного переміщення
+  playMoveSound(!!capture);
 
   // ============================
   // ПЕРЕТВОРЕННЯ НА ДАМКУ
@@ -1635,7 +1741,7 @@ function updateTurn() {
 function startTimer() {
   stopTimer();
 
-  timer = 30;
+  timer = TURN_TIME;
 
   updateTimer();
 
@@ -1646,7 +1752,6 @@ function startTimer() {
 
     if (timer <= 0) {
       stopTimer();
-
       timeOut();
     }
   }, 1000);
@@ -1670,9 +1775,7 @@ function stopTimer() {
 
 function updateTimer() {
   const whiteTime = document.getElementById("whiteTime");
-
   const blackTime = document.getElementById("blackTime");
-
   const progress = document.getElementById("timerProgress");
 
   if (!whiteTime || !blackTime || !progress) {
@@ -1681,13 +1784,13 @@ function updateTimer() {
 
   if (currentPlayer === "white") {
     whiteTime.textContent = timer;
-    blackTime.textContent = "30";
+    blackTime.textContent = TURN_TIME;
   } else {
     blackTime.textContent = timer;
-    whiteTime.textContent = "30";
+    whiteTime.textContent = TURN_TIME;
   }
 
-  progress.style.width = `${(timer / 30) * 100}%`;
+  progress.style.width = `${(timer / TURN_TIME) * 100}%`;
 }
 
 // ============================
@@ -1897,9 +2000,28 @@ function aiMove() {
     let bestScore = -Infinity;
 
     for (const move of moves) {
-      const newPieces = simulateMove(pieces, move);
+      const newBoard = simulateMove(pieces, move);
 
-      const score = minimax(newPieces, 7, false);
+      const movedPiece = getPieceFromBoard(
+        newBoard,
+        move.move.row,
+        move.move.col,
+      );
+
+      // Перевіряємо продовження взяття
+      const canContinueCapture =
+        move.capture &&
+        movedPiece &&
+        getCapturesFromBoard(newBoard, movedPiece).length > 0;
+
+      const score = minimax(
+        newBoard,
+        7,
+        canContinueCapture ? "black" : "white",
+        canContinueCapture
+          ? { row: movedPiece.row, col: movedPiece.col }
+          : null,
+      );
 
       if (score > bestScore) {
         bestScore = score;
@@ -1914,53 +2036,91 @@ function aiMove() {
   // MINIMAX
   // ============================
 
-  function minimax(boardState, depth, maximizingPlayer) {
-    if (depth === 0) {
+  function minimax(boardState, depth, color, forcedPiece = null) {
+    // Оцінюємо дошку, якщо глибину пошуку вичерпано
+    if (depth <= 0 && !forcedPiece) {
       return evaluateBoard(boardState);
     }
 
-    // ----------------------------
-    // Хід AI
-    // ----------------------------
+    let moves = [];
 
-    if (maximizingPlayer) {
-      const moves = getAllMoves(boardState, "black");
+    // Продовження серії взяттів тією самою шашкою
+    if (forcedPiece) {
+      const piece = getPieceFromBoard(
+        boardState,
+        forcedPiece.row,
+        forcedPiece.col,
+      );
 
+      if (piece) {
+        moves = getCapturesFromBoard(boardState, piece).map((capture) => ({
+          piece: piece,
+          move: capture,
+          capture: true,
+        }));
+      }
+
+      // Серія взяттів завершилася — хід переходить супернику
       if (moves.length === 0) {
-        return -10000;
+        return minimax(
+          boardState,
+          depth,
+          color === "black" ? "white" : "black",
+        );
       }
-
-      let bestScore = -Infinity;
-
-      for (const move of moves) {
-        const newBoard = simulateMove(boardState, move);
-
-        const score = minimax(newBoard, depth - 1, false);
-
-        bestScore = Math.max(bestScore, score);
-      }
-
-      return bestScore;
+    } else {
+      moves = getAllMoves(boardState, color);
     }
 
-    // ----------------------------
-    // Хід гравця
-    // ----------------------------
-
-    const moves = getAllMoves(boardState, "white");
-
+    // Перевірка, чи є доступні ходи
     if (moves.length === 0) {
-      return 10000;
+      return color === "black" ? -10000 : 10000;
     }
 
-    let bestScore = Infinity;
+    const maximizingPlayer = color === "black";
+
+    let bestScore = maximizingPlayer ? -Infinity : Infinity;
 
     for (const move of moves) {
       const newBoard = simulateMove(boardState, move);
 
-      const score = minimax(newBoard, depth - 1, true);
+      const movedPiece = getPieceFromBoard(
+        newBoard,
+        move.move.row,
+        move.move.col,
+      );
 
-      bestScore = Math.min(bestScore, score);
+      // Перевіряємо, чи потрібно продовжувати взяття
+      const canContinueCapture =
+        move.capture &&
+        movedPiece &&
+        getCapturesFromBoard(newBoard, movedPiece).length > 0;
+
+      const nextColor = canContinueCapture
+        ? color
+        : color === "black"
+          ? "white"
+          : "black";
+
+      // Під час серії взяттів глибина не зменшується
+      const nextDepth = canContinueCapture ? depth : depth - 1;
+
+      const nextForcedPiece = canContinueCapture
+        ? { row: movedPiece.row, col: movedPiece.col }
+        : null;
+
+      const score = minimax(
+        newBoard,
+        nextDepth,
+        nextColor,
+        nextForcedPiece,
+      );
+
+      if (maximizingPlayer) {
+        bestScore = Math.max(bestScore, score);
+      } else {
+        bestScore = Math.min(bestScore, score);
+      }
     }
 
     return bestScore;

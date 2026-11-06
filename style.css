@@ -18,34 +18,86 @@ body {
 
 .menu {
   text-align: center;
+  position: relative;
+  isolation: isolate;
+}
+
+.menu::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.45),
+      rgba(0, 0, 0, 0.65)),
+    url("./backgroungmenu.jpg") center / cover no-repeat;
 }
 
 .menu h1 {
   font-size: 50px;
   margin-bottom: 40px;
+  letter-spacing: 8px;
 }
 
+/* ALL BUTTONS */
+
 button {
-  border: none;
-  padding: 14px 28px;
+  box-sizing: border-box;
+  border: 1px solid rgba(218, 174, 105, 0.65);
+  padding: 12px 22px;
   margin: 8px;
   border-radius: 10px;
-  background: #333;
-  color: white;
-  font-size: 18px;
+
+  background: rgba(25, 28, 35, 0.92);
+  color: #ffffff;
+
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+
   cursor: pointer;
-  transition: 0.2s;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 button:hover {
-  background: #444;
+  background: rgba(65, 58, 47, 0.98);
+  border-color: #e4c17a;
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
+
+button:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+button:focus-visible {
+  outline: 2px solid #e4c17a;
+  outline-offset: 3px;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* MENU BUTTONS */
 
 .menu button {
   display: block;
-  width: 280px;
-  margin: 15px auto;
+  width: min(300px, calc(100vw - 40px));
+  padding: 16px 22px;
+  margin: 14px auto;
+  font-size: 18px;
 }
 
 /* GAME */
@@ -112,7 +164,8 @@ h1 {
   border: 1px solid rgba(218, 174, 105, 0.7);
   border-radius: 12px;
   background: #171b24;
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.55),
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.55),
     0 0 0 5px rgba(84, 56, 37, 0.65);
   isolation: isolate;
   margin-left: auto;
@@ -282,6 +335,11 @@ h1 {
     justify-content: center;
     flex-shrink: 0;
   }
+
+  #mobileCameraControls button:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 /* SUPPORT PANEL */
@@ -356,17 +414,25 @@ h1 {
 
 .footer-links button {
   padding: 3px 0;
+  margin: 0;
   border: 0;
+  border-radius: 0;
   background: transparent;
   color: #c5cad5;
   font: inherit;
   font-size: 12px;
+  font-weight: normal;
+  box-shadow: none;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 
 .footer-links button:hover {
   color: #e4c17a;
+  background: transparent;
+  border-color: transparent;
+  transform: none;
+  box-shadow: none;
 }
 
 .footer-links button:focus-visible {
@@ -406,6 +472,7 @@ h1 {
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  cursor: pointer;
 }
 
 #headerMenuBtn {
@@ -413,16 +480,20 @@ h1 {
   left: 50%;
   transform: translateX(-50%);
   padding: 9px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
+  margin: 0;
+  border: 1px solid rgba(218, 174, 105, 0.65);
+  border-radius: 10px;
+  background: rgba(25, 28, 35, 0.92);
   color: #fff;
   font-size: 14px;
   cursor: pointer;
 }
 
 #headerMenuBtn:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(65, 58, 47, 0.98);
+  border-color: #e4c17a;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* INFORMATION PAGES */
@@ -451,7 +522,7 @@ h1 {
 
 .info-panel button {
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -508,7 +579,7 @@ h1 {
     font-size: 11px;
   }
 
-    .game {
+  .game {
     width: 100%;
     padding-left: 0;
     padding-right: 0;
@@ -552,7 +623,4 @@ h1 {
   .menu h1 {
     font-size: 36px;
   }
-}
-.header-logo {
-  cursor: pointer;
 }
