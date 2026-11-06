@@ -33,6 +33,7 @@ const menu = document.getElementById("menu");
 const game = document.getElementById("game");
 
 const headerMenuBtn = document.getElementById("headerMenuBtn");
+const headerLogo = document.querySelector(".header-logo");
 
 const aiBtn = document.getElementById("aiBtn");
 const twoPlayersBtn = document.getElementById("twoPlayersBtn");
@@ -335,11 +336,18 @@ newGameBtn.addEventListener("click", () => {
 });
 
 menuBtn.addEventListener("click", () => {
+  // Повернення до головного меню після AI-гри
+  if (gameMode === "ai") {
+    location.reload();
+    return;
+  }
+
   stopTimer();
 
   if (gameMode === "online" && onlineSocket && onlineRoomCode) {
     onlineSocket.emit("leave-room", onlineRoomCode);
   }
+
   gameStarted = false;
   selectedPiece = null;
   aiCapturing = false;
@@ -351,6 +359,24 @@ menuBtn.addEventListener("click", () => {
 });
 
 headerMenuBtn.addEventListener("click", () => {
+  menuBtn.click();
+
+  aboutPanel.style.display = "none";
+  onlinePanel.style.display = "none";
+  supportPanel.style.display = "none";
+  menu.style.display = "block";
+});
+
+headerMenuBtn.addEventListener("click", () => {
+  menuBtn.click();
+
+  aboutPanel.style.display = "none";
+  onlinePanel.style.display = "none";
+  supportPanel.style.display = "none";
+  menu.style.display = "block";
+});
+
+headerLogo.addEventListener("click", () => {
   menuBtn.click();
 
   aboutPanel.style.display = "none";
@@ -1593,10 +1619,10 @@ function changeTurn() {
 function updateTurn() {
   turnText.textContent = currentPlayer === "white" ? "Білі" : "Чорні";
 
-  // Два гравці: камера повертається до поточного ходу.
-  // Онлайн: камера повертається до поточного ходу.
-  // AI: камера залишається з боку білих.
-  if (gameMode === "two" || gameMode === "online") {
+  // У режимі гри удвох камера перемикається за ходом.
+  // В онлайн-режимі камера залишається на стороні свого гравця.
+  // У режимі AI камера залишається з боку білих.
+  if (gameMode === "two") {
     focusCameraOnTurn(currentPlayer);
   }
 }

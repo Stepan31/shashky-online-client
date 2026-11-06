@@ -553,3 +553,6 @@ h1 {
     font-size: 36px;
   }
 }
+.header-logo {
+  cursor: pointer;
+}
