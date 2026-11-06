@@ -561,14 +561,18 @@ h1 {
   body {
     justify-content: flex-start;
     padding-top: 65px;
+    padding-bottom: 120px;
   }
 
   .site-footer {
-    position: static;
-    margin-top: 20px;
-    padding: 10px 12px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    margin-top: 0;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
     gap: 7px;
-    z-index: auto;
+    z-index: 1000;
   }
 
   .footer-links {
@@ -612,7 +616,7 @@ h1 {
   }
 
   .site-footer {
-    padding: 10px 12px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
   }
 
   .info-panel {
