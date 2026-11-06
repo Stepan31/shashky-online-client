@@ -418,6 +418,7 @@ function selectDifficulty(level) {
 
 function startGame(mode) {
   gameMode = mode;
+  init3DScene();
   gameStarted = true;
 
   menu.style.display = "none";
@@ -430,7 +431,7 @@ function startGame(mode) {
   // Start each mode from the white side. Only two-player mode will auto-flip
   // the camera on subsequent turns; AI mode keeps the user's chosen view.
   focusCameraOnTurn(
-    gameMode === "online" && onlineColor ? onlineColor : "white",
+  gameMode === "online" && onlineColor ? onlineColor : "white",
     true,
   );
 
@@ -517,6 +518,10 @@ function init3DScene() {
   scene3D.fog = new THREE.Fog("#171b24", 15, 28);
 
   camera3D = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+
+  cameraAngle = 0.24;
+  cameraPitch = 0.76;
+
   update3DCamera();
 
   renderer3D = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -828,7 +833,7 @@ function focusCameraOnTurn(player, immediate = false) {
   // White sits at row 7 (positive Z); black sits at row 0 (negative Z).
   // Keep the camera slightly off-axis and above the board so the pieces remain visibly 3D.
   cameraFocusTarget = {
-    angle: player === "white" ? 0.24 : Math.PI + 0.24,
+  angle: player === "white" ? 0 : Math.PI,
     pitch: 0.76,
   };
 
@@ -1584,15 +1589,18 @@ function changeTurn() {
 // ОНОВИТИ ТЕКСТ ХОДУ
 // ============================
 
+
 function updateTurn() {
   turnText.textContent = currentPlayer === "white" ? "Білі" : "Чорні";
 
-  // Auto-switch the camera only in local two-player mode.
-  // Against AI, keep the current view unchanged when the turn changes.
-  if (gameMode === "two") {
+  // Два гравці: камера повертається до поточного ходу.
+  // Онлайн: камера повертається до поточного ходу.
+  // AI: камера залишається з боку білих.
+  if (gameMode === "two" || gameMode === "online") {
     focusCameraOnTurn(currentPlayer);
   }
 }
+
 
 // ============================
 // ТАЙМЕР
