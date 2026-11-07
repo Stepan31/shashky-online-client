@@ -20,7 +20,7 @@ let onlineSocket = null;
 let onlineRoomCode = null;
 let onlineColor = null;
 let applyingRemoteState = false;
-
+let onlineRooms = [];
 // ============================
 // DOM
 // ============================
@@ -43,9 +43,7 @@ const newGameBtn = document.getElementById("newGameBtn");
 const menuBtn = document.getElementById("menuBtn");
 const onlineBtn = document.getElementById("onlineBtn");
 const onlinePanel = document.getElementById("onlinePanel");
-const createRoomBtn = document.getElementById("createRoomBtn");
-const joinRoomBtn = document.getElementById("joinRoomBtn");
-const roomCodeInput = document.getElementById("roomCodeInput");
+
 const onlineStatus = document.getElementById("onlineStatus");
 const onlineBackBtn = document.getElementById("onlineBackBtn");
 const supportBtn = document.getElementById("supportBtn");
@@ -87,64 +85,148 @@ function setOnlineStatus(message) {
   if (onlineStatus) onlineStatus.textContent = message;
 }
 
+
+
 function connectOnlineSocket() {
   if (onlineSocket) return;
+
   if (typeof io !== "function") {
-    setOnlineStatus(
-      "Не вдалося завантажити Socket.IO. Перевір інтернет-з'єднання.",
-    );
+    setOnlineStatus("Failed to load Socket.IO. Check your internet connection.");
     return;
   }
+
   const serverUrl = window.CHECKERS_SERVER_URL || "http://localhost:3000";
-  onlineSocket = io(serverUrl, { timeout: 8000, reconnection: true });
-  onlineSocket.on("connect", () =>
-    setOnlineStatus("З'єднано із сервером. Створи кімнату або введи код."),
-  );
-  onlineSocket.on("connect_error", () =>
-    setOnlineStatus("Не вдалося підключитися до сервера: " + serverUrl),
-  );
-  onlineSocket.on("room-created", ({ roomCode }) => {
-    onlineRoomCode = roomCode;
-    roomCodeInput.value = roomCode;
-    setOnlineStatus(
-      "Кімнату створено! Код для друга: " +
-        roomCode +
-        ". Очікуємо другого гравця...",
-    );
+
+  onlineSocket = io(serverUrl, {
+    timeout: 8000,
+    reconnection: true,
   });
-  onlineSocket.on("room-joined", ({ roomCode }) => {
-    onlineRoomCode = roomCode;
-    setOnlineStatus(
-      "Приєднано до кімнати " + roomCode + ". Очікуємо старту...",
-    );
+
+  function renderOnlineRooms() {
+    const roomsList = document.getElementById("roomsList");
+    if (!roomsList) return;
+
+    roomsList.innerHTML = "";
+
+    onlineRooms.forEach((room) => {
+      const roomElement = document.createElement("div");
+      roomElement.className = "room-join";
+
+      const info = document.createElement("span");
+      info.textContent =
+        "Room " +
+        room.roomId +
+        " — " +
+        room.playerCount +
+        "/" +
+        room.maxPlayers +
+        " players";
+
+      const button = document.createElement("button");
+      button.type = "button";
+
+      const isFull = room.playerCount >= room.maxPlayers;
+      const isActive =
+        room.status === "starting" || room.status === "playing";
+      const isMyRoom = onlineRoomCode === room.roomId;
+
+      if (isMyRoom) {
+        button.textContent = "Your Room";
+        button.disabled = true;
+      } else if (isFull || isActive) {
+        button.textContent = "Unavailable";
+        button.disabled = true;
+      } else {
+        button.textContent = "Join";
+        button.addEventListener("click", () => {
+          onlineSocket.emit("join-fixed-room", room.roomId);
+          setOnlineStatus("Joining Room " + room.roomId + "...");
+        });
+      }
+
+      roomElement.appendChild(info);
+      roomElement.appendChild(button);
+      roomsList.appendChild(roomElement);
+    });
+  }
+
+  onlineSocket.on("connect", () => {
+    setOnlineStatus("Connected to server. Select a room.");
+    onlineSocket.emit("get-rooms");
   });
-  onlineSocket.on("room-error", (message) => setOnlineStatus(message));
-  onlineSocket.on("game-start", ({ roomCode, color, state }) => {
-    onlineRoomCode = roomCode;
+
+  onlineSocket.on("connect_error", () => {
+    setOnlineStatus("Unable to connect to server: " + serverUrl);
+  });
+
+  onlineSocket.on("rooms-update", (rooms) => {
+    onlineRooms = rooms;
+    renderOnlineRooms();
+  });
+
+  onlineSocket.on("room-joined", ({ roomId, color }) => {
+    onlineRoomCode = roomId;
     onlineColor = color;
+
+    setOnlineStatus(
+      "Joined Room " +
+        roomId +
+        ". Your color: " +
+        (color === "white" ? "White" : "Black") +
+        ".",
+    );
+  });
+
+  onlineSocket.on("waiting-for-player", () => {
+    setOnlineStatus("Waiting for another player...");
+  });
+
+  onlineSocket.on("countdown", ({ seconds }) => {
+    setOnlineStatus("Game starts in " + seconds + "...");
+  });
+
+  onlineSocket.on("room-error", (message) => {
+    setOnlineStatus(message);
+  });
+
+  onlineSocket.on("game-start", ({ roomId, color, state }) => {
+    onlineRoomCode = roomId;
+    onlineColor = color;
+
     onlinePanel.style.display = "none";
     menu.style.display = "none";
+
     startGame("online");
     applyOnlineState(state, false);
+
     setOnlineStatus(
-      "Гра почалася. Ти граєш за " +
-        (color === "white" ? "білих" : "чорних") +
-        ". Код: " +
-        roomCode,
+      "Game started. You are playing as " +
+        (color === "white" ? "White" : "Black") +
+        ".",
     );
   });
-  onlineSocket.on("state-update", (state) => applyOnlineState(state, true));
+
+  onlineSocket.on("state-update", (state) => {
+    applyOnlineState(state, true);
+  });
+
   onlineSocket.on("opponent-left", () => {
-    alert("Суперник від'єднався від кімнати.");
     stopTimer();
+
     gameStarted = false;
     game.style.display = "none";
     onlinePanel.style.display = "block";
-    setOnlineStatus("Суперник від'єднався. Можеш створити нову кімнату.");
+
     onlineRoomCode = null;
     onlineColor = null;
+
+    setOnlineStatus("Opponent disconnected. You can select another room.");
+
+    onlineSocket.emit("get-rooms");
   });
 }
+
+
 
 function serializeOnlineState() {
   return {
@@ -216,6 +298,14 @@ onlineBtn.addEventListener("click", () => {
 });
 
 onlineBackBtn.addEventListener("click", () => {
+  if (onlineSocket && onlineRoomCode !== null) {
+    onlineSocket.emit("leave-room");
+    onlineSocket.emit("get-rooms");
+  }
+
+  onlineRoomCode = null;
+  onlineColor = null;
+
   onlinePanel.style.display = "none";
   menu.style.display = "block";
 });
@@ -320,30 +410,7 @@ copyIbanBtn?.addEventListener("click", async () => {
   }
 });
 
-createRoomBtn.addEventListener("click", () => {
-  connectOnlineSocket();
-  if (!onlineSocket || !onlineSocket.connected) {
-    setOnlineStatus("Немає з'єднання із сервером. Перевір адресу сервера.");
-    return;
-  }
-  setOnlineStatus("Створюємо кімнату...");
-  onlineSocket.emit("create-room");
-});
 
-joinRoomBtn.addEventListener("click", () => {
-  connectOnlineSocket();
-  const code = roomCodeInput.value.trim().toUpperCase();
-  if (code.length !== 6) {
-    setOnlineStatus("Введи 6-значний код кімнати.");
-    return;
-  }
-  if (!onlineSocket || !onlineSocket.connected) {
-    setOnlineStatus("Немає з'єднання із сервером. Перевір адресу сервера.");
-    return;
-  }
-  setOnlineStatus("Приєднуємося до кімнати...");
-  onlineSocket.emit("join-room", code);
-});
 
 newGameBtn.addEventListener("click", () => {
   if (gameMode === "online") {
@@ -365,7 +432,7 @@ menuBtn.addEventListener("click", () => {
   stopTimer();
 
   if (gameMode === "online" && onlineSocket && onlineRoomCode) {
-    onlineSocket.emit("leave-room", onlineRoomCode);
+    onlineSocket.emit("leave-room");
   }
 
   gameStarted = false;
@@ -1572,7 +1639,6 @@ function movePiece(row, col) {
     !applyingRemoteState
   ) {
     onlineSocket.emit("game-state", {
-      roomCode: onlineRoomCode,
       state: serializeOnlineState(),
     });
   }

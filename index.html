@@ -18,20 +18,14 @@
 
     <meta property="og:locale" content="uk_UA" />
 
-    <link
-      rel="canonical"
-      href="https://shashky-3d-online.onrender.com/"
-    />
+    <link rel="canonical" href="https://shashky-3d-online.onrender.com/" />
 
     <meta property="og:title" content="Shashky 3D Online – Play Checkers" />
     <meta
       property="og:description"
       content="Play checkers online against AI or challenge your friends."
     />
-    <meta
-      property="og:url"
-      content="https://shashky-3d-online.onrender.com/"
-    />
+    <meta property="og:url" content="https://shashky-3d-online.onrender.com/" />
     <meta property="og:type" content="website" />
 
     <link rel="icon" type="image/png" href="./favicon.png" />
@@ -55,32 +49,30 @@
       <button id="supportBtn">❤️ Допомогти проєкту</button>
     </div>
 
-    
     <div class="support-panel" id="supportPanel" style="display: none">
-        <h2>❤️ Допомогти проєкту</h2>
-    
-        <p>
-            Якщо тобі подобається гра, ти можеш добровільно підтримати її розвиток.
-            Дякую за допомогу!
-        </p>
-    
-        <label for="cardNumber">Номер картки (Monobank):</label>
-        <div class="support-card">
-            <span id="cardNumber">4874 0700 5747 1268</span>
-            <button id="copyCardBtn" type="button">Копіювати</button>
-        </div>
-    
-        <label for="ibanNumber">IBAN (Monobank):</label>
-        <div class="support-card">
-            <span id="ibanNumber">UA653220010000026208371069618</span>
-            <button id="copyIbanBtn" type="button">Копіювати IBAN</button>
-        </div>
-    
-        <p id="copyStatus" role="status"></p>
-    
-        <button id="supportBackBtn" type="button">← Назад</button>
-    </div>
+      <h2>❤️ Допомогти проекту</h2>
 
+      <p>
+        Якщо тобі подобається гра, ти можеш добровільно підтримати її розвиток.
+        Дякую за допомогу!
+      </p>
+
+      <label for="cardNumber">Номер картки (Monobank):</label>
+      <div class="support-card">
+        <span id="cardNumber">4874 0700 5747 1268</span>
+        <button id="copyCardBtn" type="button">Копіювати</button>
+      </div>
+
+      <label for="ibanNumber">IBAN (Monobank):</label>
+      <div class="support-card">
+        <span id="ibanNumber">UA653220010000026208371069618</span>
+        <button id="copyIbanBtn" type="button">Копіювати IBAN</button>
+      </div>
+
+      <p id="copyStatus" role="status"></p>
+
+      <button id="supportBackBtn" type="button">← Назад</button>
+    </div>
 
     <div class="info-panel" id="aboutPanel" style="display: none">
       <h2>About Shashky 3D</h2>
@@ -212,18 +204,15 @@
 
     <div class="online-panel" id="onlinePanel" style="display: none">
       <h2>Онлайн-гра</h2>
-      <p>Створи кімнату або введи код друга.</p>
-      <button id="createRoomBtn">Створити кімнату</button>
-      <div class="room-join">
-        <input
-          id="roomCodeInput"
-          maxlength="6"
-          placeholder="Код кімнати"
-          autocomplete="off"
-        />
-        <button id="joinRoomBtn">Приєднатися</button>
-      </div>
-      <p id="onlineStatus" role="status">Підключення до сервера...</p>
+
+      <p>Обери кімнату та дочекайся суперника.</p>
+
+      <div id="roomsList"></div>
+
+      <p id="onlineStatus" role="status">
+        Підключення до сервера...
+      </p>
+
       <button id="onlineBackBtn">← Назад</button>
     </div>
 
