@@ -237,9 +237,9 @@ function serializeOnlineState() {
       king: !!piece.king,
     })),
     currentPlayer,
+    gameOver: !gameStarted,
   };
 }
-
 function applyOnlineState(state, fromOpponent) {
   if (!state || !Array.isArray(state.pieces)) return;
   // Звук лише тоді, коли дошка справді змінилася
@@ -310,11 +310,6 @@ onlineBackBtn.addEventListener("click", () => {
   menu.style.display = "block";
 });
 
-supportBtn.addEventListener("click", () => {
-  menu.style.display = "none";
-  onlinePanel.style.display = "none";
-  supportPanel.style.display = "block";
-});
 
 supportBackBtn.addEventListener("click", () => {
   supportPanel.style.display = "none";
@@ -325,45 +320,22 @@ footerButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const page = button.dataset.footerPage;
 
-    if (page === "about") {
-      menu.style.display = "none";
-      onlinePanel.style.display = "none";
-      supportPanel.style.display = "none";
-      aboutPanel.style.display = "block";
-    }
+    // Закриваємо всі сторінки футера
+    Object.values(footerPanels).forEach((panel) => {
+      if (panel) {
+        panel.style.display = "none";
+      }
+    });
 
-    if (page === "support") {
-      menu.style.display = "none";
-      onlinePanel.style.display = "none";
-      aboutPanel.style.display = "none";
-      supportPanel.style.display = "block";
-    }
+    // Закриваємо головне меню та онлайн-лобі
+    menu.style.display = "none";
+    onlinePanel.style.display = "none";
 
-    if (page === "terms") {
-      menu.style.display = "none";
-      onlinePanel.style.display = "none";
-      supportPanel.style.display = "none";
-      aboutPanel.style.display = "none";
-      termsPanel.style.display = "block";
-    }
+    // Відкриваємо лише вибрану сторінку
+    const targetPanel = footerPanels[page];
 
-    if (page === "privacy") {
-      menu.style.display = "none";
-      onlinePanel.style.display = "none";
-      supportPanel.style.display = "none";
-      aboutPanel.style.display = "none";
-      termsPanel.style.display = "none";
-      privacyPanel.style.display = "block";
-    }
-
-    if (page === "contact") {
-      menu.style.display = "none";
-      onlinePanel.style.display = "none";
-      supportPanel.style.display = "none";
-      aboutPanel.style.display = "none";
-      termsPanel.style.display = "none";
-      privacyPanel.style.display = "none";
-      contactPanel.style.display = "block";
+    if (targetPanel) {
+      targetPanel.style.display = "block";
     }
   });
 });
@@ -388,25 +360,25 @@ copyCardBtn.addEventListener("click", async () => {
 
   try {
     await navigator.clipboard.writeText(number);
-    copyStatus.textContent = "Номер картки скопійовано!";
+    copyStatus.textContent = "Card number copied!";
   } catch (error) {
-    copyStatus.textContent = "Не вдалося скопіювати. Скопіюй номер вручну.";
+    copyStatus.textContent = "Failed to copy. Please copy the number manually.";
   }
 });
 copyIbanBtn?.addEventListener("click", async () => {
   const iban = ibanNumber?.textContent.trim();
 
-  if (!iban || iban === "UA653220010000026208371069618") {
-    copyStatus.textContent = "Спочатку додай IBAN.";
+  if (!iban || iban === "Unavailable") {
+    copyStatus.textContent = "Please add an IBAN first.";
     return;
   }
 
   try {
     await navigator.clipboard.writeText(iban);
-    copyStatus.textContent = "IBAN скопійовано!";
+    copyStatus.textContent = "IBAN copied!";
   } catch (error) {
     copyStatus.textContent =
-      "Не вдалося скопіювати. Скопіюй IBAN вручну.";
+      "Failed to copy. Please copy the IBAN manually.";
   }
 });
 
@@ -415,7 +387,7 @@ copyIbanBtn?.addEventListener("click", async () => {
 newGameBtn.addEventListener("click", () => {
   if (gameMode === "online") {
     alert(
-      "Щоб почати нову онлайн-гру, повернися в меню та створи нову кімнату.",
+      "To start a new online game, return to the menu and join a new room.",
     );
     return;
   }
@@ -423,8 +395,9 @@ newGameBtn.addEventListener("click", () => {
 });
 
 menuBtn.addEventListener("click", () => {
-  // Повернення до головного меню після AI-гри
-  if (gameMode === "ai") {
+  // Return to the main menu when selecting AI difficulty
+  // or leaving an AI game.
+  if (!gameMode || gameMode === "ai") {
     location.reload();
     return;
   }
@@ -445,14 +418,6 @@ menuBtn.addEventListener("click", () => {
   menu.style.display = "block";
 });
 
-headerMenuBtn.addEventListener("click", () => {
-  menuBtn.click();
-
-  aboutPanel.style.display = "none";
-  onlinePanel.style.display = "none";
-  supportPanel.style.display = "none";
-  menu.style.display = "block";
-});
 
 headerMenuBtn.addEventListener("click", () => {
   menuBtn.click();
@@ -460,43 +425,39 @@ headerMenuBtn.addEventListener("click", () => {
   aboutPanel.style.display = "none";
   onlinePanel.style.display = "none";
   supportPanel.style.display = "none";
+  termsPanel.style.display = "none";
+  privacyPanel.style.display = "none";
+  contactPanel.style.display = "none";
+
   menu.style.display = "block";
 });
 
-headerLogo.addEventListener("click", () => {
+headerLogo?.addEventListener("click", () => {
   menuBtn.click();
 
   aboutPanel.style.display = "none";
   onlinePanel.style.display = "none";
   supportPanel.style.display = "none";
+  termsPanel.style.display = "none";
+  privacyPanel.style.display = "none";
+  contactPanel.style.display = "none";
+
   menu.style.display = "block";
 });
 
 // ============================
 // МЕНЮ СКЛАДНОСТІ
 // ============================
+
 function showDifficultyMenu() {
   menu.innerHTML = `
     <div class="difficulty-menu">
+      <h2>Select Difficulty</h2>
 
-      <h2>Оберіть складність</h2>
-
-      <button id="easyBtn">
-        🟢 Легко
-      </button>
-
-      <button id="mediumBtn">
-        🟡 Середньо
-      </button>
-
-      <button id="hardBtn">
-        🔴 Важко
-      </button>
-
-      <button id="backBtn">
-        ← Назад
-      </button>
-
+      <button id="easyBtn">🟢 Easy</button>
+      <button id="mediumBtn">🟡 Medium</button>
+      <button id="hardBtn">🔴 Hard</button>
+      <button id="backBtn">← Back</button>
     </div>
   `;
 
@@ -516,6 +477,7 @@ function showDifficultyMenu() {
     location.reload();
   });
 }
+
 
 // ============================
 // ФУНКЦІЯ ВИБОРУ
@@ -621,7 +583,7 @@ function init3DScene() {
   if (scene3D) return;
   if (!window.THREE) {
     board3d.innerHTML =
-      '<div class="three-error">Не вдалося завантажити Three.js. Перевір підключення до інтернету та перезапусти гру.</div>';
+      '<div class="three-error">Failed to load Three.js. Check your internet connection and restart the game.</div>';
     return;
   }
 
@@ -1532,7 +1494,7 @@ function playMoveSound(isCapture = false) {
     oscillator.start(now);
     oscillator.stop(now + duration);
   } catch (error) {
-    console.warn("Не вдалося відтворити звук:", error);
+    console.warn("Failed to play sound:", error);
   }
 }
 
@@ -1789,11 +1751,11 @@ function changeTurn() {
 
 
 function updateTurn() {
-  turnText.textContent = currentPlayer === "white" ? "Білі" : "Чорні";
+  turnText.textContent = currentPlayer === "white" ? "White" : "Black";
 
-  // У режимі гри удвох камера перемикається за ходом.
-  // В онлайн-режимі камера залишається на стороні свого гравця.
-  // У режимі AI камера залишається з боку білих.
+  // In two-player mode, the camera follows the current player.
+  // In online mode, the camera stays on the local player's side.
+  // In AI mode, the camera stays on the white player's side.
   if (gameMode === "two") {
     focusCameraOnTurn(currentPlayer);
   }
@@ -1869,9 +1831,9 @@ function timeOut() {
   aiCapturing = false;
   selectedPiece = null;
 
-  const winner = currentPlayer === "white" ? "Чорні" : "Білі";
+  const winner = currentPlayer === "white" ? "Black" : "White";
 
-  alert(`⏰ Час вийшов!\n\nПеремогли: ${winner}!`);
+  alert(`⏰ Time is up!\n\n${winner} wins!`);
 }
 
 // ============================
@@ -1892,7 +1854,7 @@ function checkWinner() {
 
     stopTimer();
 
-    alert("🏆 Чорні перемогли!");
+    alert("🏆 Black wins!");
 
     return;
   }
@@ -1906,7 +1868,7 @@ function checkWinner() {
 
     stopTimer();
 
-    alert("🏆 Білі перемогли!");
+    alert("🏆 White wins!");
 
     return;
   }
@@ -1940,9 +1902,9 @@ function checkWinner() {
 
     stopTimer();
 
-    const winner = currentPlayer === "white" ? "Чорні" : "Білі";
+    const winner = currentPlayer === "white" ? "Black" : "White";
 
-    alert(`🏆 ${winner} перемогли!`);
+    alert(`🏆 ${winner} wins!`);
   }
 }
 
@@ -1951,10 +1913,7 @@ function checkWinner() {
 // ============================
 
 function hasNormalMove(piece) {
-  // ============================
-  // ДАМКА
-  // ============================
-
+  // DAMKA
   if (piece.king) {
     const directions = [
       [-1, -1],
@@ -1964,11 +1923,14 @@ function hasNormalMove(piece) {
     ];
 
     for (const [dr, dc] of directions) {
-      const row = piece.row + dr;
+      let row = piece.row + dr;
+      let col = piece.col + dc;
 
-      const col = piece.col + dc;
+      while (isInside(row, col)) {
+        if (getPiece(row, col)) {
+          break;
+        }
 
-      if (isInside(row, col) && !getPiece(row, col)) {
         return true;
       }
     }
@@ -1976,10 +1938,7 @@ function hasNormalMove(piece) {
     return false;
   }
 
-  // ============================
-  // ЗВИЧАЙНА ШАШКА
-  // ============================
-
+  // NORMAL PIECE
   const direction = piece.color === "white" ? -1 : 1;
 
   const moves = [
@@ -1989,7 +1948,6 @@ function hasNormalMove(piece) {
 
   return moves.some(([dr, dc]) => {
     const row = piece.row + dr;
-
     const col = piece.col + dc;
 
     return isInside(row, col) && !getPiece(row, col);

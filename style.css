@@ -39,6 +39,27 @@ body {
   font-size: 50px;
   margin-bottom: 40px;
   letter-spacing: 8px;
+
+  display: inline-block;
+  animation: checkersSlide 3s ease-in-out infinite;
+}
+
+@keyframes checkersSlide {
+
+  0%,
+  100% {
+    transform: translateX(-15px);
+  }
+
+  50% {
+    transform: translateX(15px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu h1 {
+    animation: none;
+  }
 }
 
 /* ALL BUTTONS */

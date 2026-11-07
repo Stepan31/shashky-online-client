@@ -1,5 +1,6 @@
+
 <!doctype html>
-<html lang="uk">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,10 +14,10 @@
 
     <meta
       name="description"
-      content="Play Shashky 3D Online for free. Play checkers against AI, challenge a friend, or enjoy online matches."
+      content="Play Shashky 3D Online for free. Play checkers against AI, challenge a friend, or enjoy online multiplayer matches."
     />
 
-    <meta property="og:locale" content="uk_UA" />
+    <meta property="og:locale" content="en_US" />
 
     <link rel="canonical" href="https://shashky-3d-online.onrender.com/" />
 
@@ -36,42 +37,47 @@
     <header class="site-header">
       <div class="header-logo">♟ Shashky 3D</div>
 
-      <button id="headerMenuBtn" type="button" aria-label="Відкрити меню">
-        ☰ Меню
+      <button id="headerMenuBtn" type="button" aria-label="Open menu">
+        ☰ Menu
       </button>
     </header>
+
     <div class="menu" id="menu">
       <h1>CHECKERS</h1>
 
-      <button id="aiBtn">🤖 Грати з AI</button>
-      <button id="twoPlayersBtn">👥 Грати удвох</button>
-      <button id="onlineBtn">🌐 Грати онлайн</button>
-      <button id="supportBtn">❤️ Допомогти проєкту</button>
+      <button id="aiBtn">🤖 Play vs AI</button>
+      <button id="twoPlayersBtn">👥 Two Players</button>
+      <button id="onlineBtn">🌐 Online Game</button>
     </div>
 
     <div class="support-panel" id="supportPanel" style="display: none">
-      <h2>❤️ Допомогти проекту</h2>
+      <h2>❤️ Support the Project</h2>
 
       <p>
-        Якщо тобі подобається гра, ти можеш добровільно підтримати її розвиток.
-        Дякую за допомогу!
+        If you enjoy the game, you can help support its development.
+        Thank you for your interest!
       </p>
 
-      <label for="cardNumber">Номер картки (Monobank):</label>
+      <p>
+        Direct support options are currently unavailable.
+        Please check back later.
+      </p>
+
+      <label for="cardNumber">Card number:</label>
       <div class="support-card">
-        <span id="cardNumber">4874 0700 5747 1268</span>
-        <button id="copyCardBtn" type="button">Копіювати</button>
+        <span id="cardNumber">Unavailable</span>
+        <button id="copyCardBtn" type="button" disabled>Copy</button>
       </div>
 
-      <label for="ibanNumber">IBAN (Monobank):</label>
+      <label for="ibanNumber">IBAN:</label>
       <div class="support-card">
-        <span id="ibanNumber">UA653220010000026208371069618</span>
-        <button id="copyIbanBtn" type="button">Копіювати IBAN</button>
+        <span id="ibanNumber">Unavailable</span>
+        <button id="copyIbanBtn" type="button" disabled>Copy IBAN</button>
       </div>
 
       <p id="copyStatus" role="status"></p>
 
-      <button id="supportBackBtn" type="button">← Назад</button>
+      <button id="supportBackBtn" type="button">← Back</button>
     </div>
 
     <div class="info-panel" id="aboutPanel" style="display: none">
@@ -196,30 +202,30 @@
       </a>
 
       <p class="contact-note">
-        Gmail will open in a new tab so you can write your message
+        Gmail will open in a new tab so you can write your message.
       </p>
 
       <button id="contactBackBtn" type="button">← Back</button>
     </div>
 
     <div class="online-panel" id="onlinePanel" style="display: none">
-      <h2>Онлайн-гра</h2>
+      <h2>Online Game</h2>
 
-      <p>Обери кімнату та дочекайся суперника.</p>
+      <p>Select a room and wait for an opponent.</p>
 
       <div id="roomsList"></div>
 
       <p id="onlineStatus" role="status">
-        Підключення до сервера...
+        Connecting to server...
       </p>
 
-      <button id="onlineBackBtn">← Назад</button>
+      <button id="onlineBackBtn">← Back</button>
     </div>
 
     <div class="game" id="game">
       <div class="top-panel">
         <div class="player">
-          <span>Білі</span>
+          <span>White</span>
           <span id="whiteTime">30</span>
         </div>
 
@@ -228,14 +234,14 @@
         </div>
 
         <div class="player">
-          <span>Чорні</span>
+          <span>Black</span>
           <span id="blackTime">30</span>
         </div>
       </div>
 
       <h1>CHECKERS</h1>
 
-      <div id="board" aria-label="3D дошка для шашок">
+      <div id="board" aria-label="3D checkers board">
         <div id="board3d"></div>
         <div id="boardGrid"></div>
 
@@ -243,37 +249,37 @@
           <button
             id="cameraLeftBtn"
             type="button"
-            aria-label="Повернути камеру ліворуч"
+            aria-label="Rotate camera left"
           >
             ←
           </button>
 
-          <button id="zoomOutBtn" type="button" aria-label="Віддалити дошку">
+          <button id="zoomOutBtn" type="button" aria-label="Zoom out">
             −
           </button>
 
-          <button id="zoomInBtn" type="button" aria-label="Наблизити дошку">
+          <button id="zoomInBtn" type="button" aria-label="Zoom in">
             +
           </button>
 
           <button
             id="cameraRightBtn"
             type="button"
-            aria-label="Повернути камеру праворуч"
+            aria-label="Rotate camera right"
           >
             →
           </button>
         </div>
       </div>
 
-      <div class="turn">Хід: <span id="turn">Білі</span></div>
+      <div class="turn">Turn: <span id="turn">White</span></div>
 
-      <button id="newGameBtn">Нова гра</button>
-      <button id="menuBtn">Меню</button>
+      <button id="newGameBtn">New Game</button>
+      <button id="menuBtn">Menu</button>
     </div>
 
     <footer class="site-footer">
-      <nav class="footer-links" aria-label="Інформація про гру">
+      <nav class="footer-links" aria-label="Game information">
         <button type="button" data-footer-page="about">About Us</button>
         <button type="button" data-footer-page="terms">Terms of Service</button>
         <button type="button" data-footer-page="privacy">Privacy Policy</button>
@@ -285,6 +291,7 @@
 
       <div class="footer-copyright">© 2026 Shashky 3D</div>
     </footer>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="online-config.js"></script>
