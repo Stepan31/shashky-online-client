@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shashky-3d-online.onrender.com/sitemap.xml
