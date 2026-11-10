@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
   <head>
@@ -14,7 +13,7 @@
 
     <meta
       name="description"
-      content="Play Shashky 3D Online for free. Play checkers against AI, challenge a friend, or enjoy online multiplayer matches."
+      content="Play free 3D checkers online with Shashky 3D. Challenge AI, play with a friend, or compete in real-time multiplayer matches. No download required."
     />
 
     <meta property="og:locale" content="en_US" />
@@ -35,7 +34,7 @@
 
   <body>
     <header class="site-header">
-      <div class="header-logo">♟ Shashky 3D</div>
+      <div class="header-logo">♟ Checkers 3D</div>
 
       <button id="headerMenuBtn" type="button" aria-label="Open menu">
         ☰ Menu
@@ -43,54 +42,46 @@
     </header>
 
     <div class="menu" id="menu">
-      <h1>CHECKERS</h1>
+      <h1>Play Checkers Online – Shashky 3D</h1>
 
       <button id="aiBtn">🤖 Play vs AI</button>
       <button id="twoPlayersBtn">👥 Two Players</button>
       <button id="onlineBtn">🌐 Online Game</button>
     </div>
 
-    <div class="support-panel" id="supportPanel" style="display: none">
-      <h2>❤️ Support the Project</h2>
-
-      <p>
-        If you enjoy the game, you can help support its development.
-        Thank you for your interest!
-      </p>
-
-      <p>
-        Direct support options are currently unavailable.
-        Please check back later.
-      </p>
-
-      <label for="cardNumber">Card number:</label>
-      <div class="support-card">
-        <span id="cardNumber">Unavailable</span>
-        <button id="copyCardBtn" type="button" disabled>Copy</button>
-      </div>
-
-      <label for="ibanNumber">IBAN:</label>
-      <div class="support-card">
-        <span id="ibanNumber">Unavailable</span>
-        <button id="copyIbanBtn" type="button" disabled>Copy IBAN</button>
-      </div>
-
-      <p id="copyStatus" role="status"></p>
-
-      <button id="supportBackBtn" type="button">← Back</button>
-    </div>
 
     <div class="info-panel" id="aboutPanel" style="display: none">
       <h2>About Shashky 3D</h2>
 
       <p>
-        Shashky 3D is an online checkers game where you can play against AI,
-        challenge a friend, or play online.
+        Shashky 3D is a free online 3D checkers game where you can enjoy the
+        classic board game directly in your browser. No downloads or
+        installations are required.
       </p>
 
+      <h3>Play Checkers Your Way</h3>
+
       <p>
-        The project is being developed to make checkers accessible and enjoyable
-        for everyone.
+        Challenge the AI opponent and test your strategy, play with a friend on
+        the same device, or join an online multiplayer game and compete against
+        other players.
+      </p>
+
+      <h3>Classic Checkers in 3D</h3>
+
+      <p>
+        Enjoy a three-dimensional checkers board, interactive pieces, and a
+        familiar checkers experience with different ways to play. Whether you
+        are a beginner or an experienced player, Shashky 3D offers a simple way
+        to enjoy checkers online.
+      </p>
+
+      <h3>Our Goal</h3>
+
+      <p>
+        Shashky 3D is an independent project created to make playing checkers
+        online accessible, enjoyable, and easy for everyone. We continue working
+        to improve the game and its multiplayer experience.
       </p>
 
       <button id="aboutBackBtn" type="button">← Back</button>
@@ -215,9 +206,7 @@
 
       <div id="roomsList"></div>
 
-      <p id="onlineStatus" role="status">
-        Connecting to server...
-      </p>
+      <p id="onlineStatus" role="status">Connecting to server...</p>
 
       <button id="onlineBackBtn">← Back</button>
     </div>
@@ -254,13 +243,9 @@
             ←
           </button>
 
-          <button id="zoomOutBtn" type="button" aria-label="Zoom out">
-            −
-          </button>
+          <button id="zoomOutBtn" type="button" aria-label="Zoom out">−</button>
 
-          <button id="zoomInBtn" type="button" aria-label="Zoom in">
-            +
-          </button>
+          <button id="zoomInBtn" type="button" aria-label="Zoom in">+</button>
 
           <button
             id="cameraRightBtn"
@@ -284,17 +269,21 @@
         <button type="button" data-footer-page="terms">Terms of Service</button>
         <button type="button" data-footer-page="privacy">Privacy Policy</button>
         <button type="button" data-footer-page="contact">Contact Us</button>
-        <button type="button" data-footer-page="support">
-          Support the Project
-        </button>
       </nav>
 
-      <div class="footer-copyright">© 2026 Shashky 3D</div>
+      <div class="footer-copyright">© 2026 Checkers 3D Online · by iLeo</div>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
     <script src="online-config.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/online.js"></script>
+    <script src="js/three-scene.js"></script>
+    <script src="js/game-core.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/board.js"></script>
+    <script src="js/audio.js"></script>
     <script src="renderer.js"></script>
   </body>
 </html>

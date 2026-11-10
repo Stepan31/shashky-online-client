@@ -363,48 +363,6 @@ h1 {
   }
 }
 
-/* SUPPORT PANEL */
-
-.support-panel {
-  width: min(420px, calc(100vw - 32px));
-  box-sizing: border-box;
-  margin: 20px auto;
-  padding: 24px;
-  text-align: center;
-  color: #fff;
-  background: #222630;
-  border: 1px solid rgba(218, 174, 105, 0.65);
-  border-radius: 16px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
-}
-
-.support-panel h2 {
-  margin-top: 0;
-}
-
-.support-panel p {
-  color: #d7dbe4;
-  line-height: 1.5;
-}
-
-.support-card {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin: 12px 0;
-}
-
-#cardNumber {
-  font-size: 16px;
-  letter-spacing: 1px;
-  overflow-wrap: anywhere;
-}
-
-.support-panel button {
-  cursor: pointer;
-}
 
 /* FOOTER */
 
