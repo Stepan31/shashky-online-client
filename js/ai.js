@@ -2,7 +2,7 @@
 // AI
 // ============================
 
-function aiMove() {
+async function aiMove() {
   if (!gameStarted) {
     return;
   }
@@ -63,9 +63,11 @@ function aiMove() {
   // HARD AI
   // ============================
 
-  function getHardMove(moves) {
+  async function getHardMove(moves) {
     let bestMove = moves[0];
     let bestScore = -Infinity;
+    let nodes = 0;
+    let alpha = -Infinity;
 
     for (const move of moves) {
       const newBoard = simulateMove(pieces, move);
@@ -76,25 +78,29 @@ function aiMove() {
         move.move.col,
       );
 
-      // Перевіряємо продовження взяття
       const canContinueCapture =
         move.capture &&
         movedPiece &&
         getCapturesFromBoard(newBoard, movedPiece).length > 0;
 
-      const score = minimax(
+      const score = await minimax(
         newBoard,
         7,
         canContinueCapture ? "black" : "white",
         canContinueCapture
           ? { row: movedPiece.row, col: movedPiece.col }
           : null,
+        () => ++nodes,
+        alpha,
+        Infinity,
       );
 
       if (score > bestScore) {
         bestScore = score;
         bestMove = move;
       }
+
+      alpha = Math.max(alpha, bestScore);
     }
 
     return bestMove;
@@ -104,15 +110,28 @@ function aiMove() {
   // MINIMAX
   // ============================
 
-  function minimax(boardState, depth, color, forcedPiece = null) {
-    // Оцінюємо дошку, якщо глибину пошуку вичерпано
+  async function minimax(
+    boardState,
+    depth,
+    color,
+    forcedPiece = null,
+    countNode,
+    alpha = -Infinity,
+    beta = Infinity,
+  ) {
+    const nodes = countNode();
+
+    // Даємо браузеру оновити інтерфейс
+    if (nodes % 500 === 0) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
     if (depth <= 0 && !forcedPiece) {
       return evaluateBoard(boardState);
     }
 
     let moves = [];
 
-    // Продовження серії взяттів тією самою шашкою
     if (forcedPiece) {
       const piece = getPieceFromBoard(
         boardState,
@@ -128,19 +147,21 @@ function aiMove() {
         }));
       }
 
-      // Серія взяттів завершилася — хід переходить супернику
       if (moves.length === 0) {
-        return minimax(
+        return await minimax(
           boardState,
           depth,
           color === "black" ? "white" : "black",
+          null,
+          countNode,
+          alpha,
+          beta,
         );
       }
     } else {
       moves = getAllMoves(boardState, color);
     }
 
-    // Перевірка, чи є доступні ходи
     if (moves.length === 0) {
       return color === "black" ? -10000 : 10000;
     }
@@ -158,7 +179,6 @@ function aiMove() {
         move.move.col,
       );
 
-      // Перевіряємо, чи потрібно продовжувати взяття
       const canContinueCapture =
         move.capture &&
         movedPiece &&
@@ -170,24 +190,33 @@ function aiMove() {
           ? "white"
           : "black";
 
-      // Під час серії взяттів глибина не зменшується
       const nextDepth = canContinueCapture ? depth : depth - 1;
 
       const nextForcedPiece = canContinueCapture
         ? { row: movedPiece.row, col: movedPiece.col }
         : null;
 
-      const score = minimax(
+      const score = await minimax(
         newBoard,
         nextDepth,
         nextColor,
         nextForcedPiece,
+        countNode,
+        alpha,
+        beta,
       );
 
       if (maximizingPlayer) {
         bestScore = Math.max(bestScore, score);
+        alpha = Math.max(alpha, bestScore);
       } else {
         bestScore = Math.min(bestScore, score);
+        beta = Math.min(beta, bestScore);
+      }
+
+      // Відсікаємо гілки, які не вплинуть на результат
+      if (beta <= alpha) {
+        break;
       }
     }
 
@@ -706,7 +735,11 @@ function aiMove() {
   } else if (aiDifficulty === "medium") {
     choice = getMediumMove(possibleMoves);
   } else if (aiDifficulty === "hard") {
-    choice = getHardMove(possibleMoves);
+    choice = await getHardMove(possibleMoves);
+  }
+
+  if (!gameStarted || currentPlayer !== "black") {
+    return;
   }
 
   selectedPiece = choice.piece;

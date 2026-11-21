@@ -506,7 +506,7 @@ function movePiece(row, col) {
 
         setTimeout(() => {
           aiMove();
-        }, 500);
+        }, 5000);
 
         return;
       }
@@ -561,7 +561,7 @@ function movePiece(row, col) {
   if (gameMode === "ai" && currentPlayer === "black" && gameStarted) {
     setTimeout(() => {
       aiMove();
-    }, 500);
+    }, 5000);
   }
 }
 
